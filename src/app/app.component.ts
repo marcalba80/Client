@@ -6,5 +6,21 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'Client';
+  isLoggedIn = false;
+  username?: string;
+  showAdminBoard = false;
+  showModeratorBoard = false;
+
+  constructor(){
+
+  }
+
+  ngOnInit(): void {
+
+  }
+
+  logout(): void{
+    
+    window.location.reload();
+  }
 }
