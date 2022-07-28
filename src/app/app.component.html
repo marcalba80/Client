@@ -3,7 +3,7 @@
     <a href="#" class="navbar-brand" style="margin-left: 15px;">TexSec</a>
     <ul class="navbar-nav me-auto" routerLinkActive="active">
       <li class="nav-item">
-        <a href="/home" class="nav-link" routerLink="home">Home</a>
+        <a href="/chat" class="nav-link" routerLink="chat">Xat</a>
       </li>
       <!-- <li class="nav-item" *ngIf="showAdminBoard">
         <a href="/admin" class="nav-link" routerLink="admin">Admin Board</a>
@@ -11,17 +11,17 @@
       <li class="nav-item" *ngIf="showModeratorBoard">
         <a href="/mod" class="nav-link" routerLink="mod">Moderator Board</a>
       </li> -->
-      <li class="nav-item">
+      <!-- <li class="nav-item">
         <a href="/user" class="nav-link" *ngIf="isLoggedIn" routerLink="user">User</a>
-      </li>
+      </li> -->
     </ul>
 
     <ul class="navbar-nav ms-auto" *ngIf="!isLoggedIn">
       <li class="nav-item">
-        <a href="/register" class="nav-link" routerLink="register">Sign Up</a>
+        <a href="/register" class="nav-link" routerLink="register">Registrar-se</a>
       </li>
       <li class="nav-item">
-        <a href="/login" class="nav-link" routerLink="login">Login</a>
+        <a href="/login" class="nav-link" routerLink="login">Iniciar sessió</a>
       </li>
     </ul>
 
@@ -30,7 +30,7 @@
         <a href="/profile" class="nav-link" routerLink="profile">{{ username }}</a>
       </li>
       <li class="nav-item">
-        <a href class="nav-link" (click)="logout()">LogOut</a>
+        <a href class="nav-link" (click)="logout()">Tancar sessió</a>
       </li>
     </ul>
   </nav>
