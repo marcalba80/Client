@@ -23,6 +23,7 @@
     "@types/stompjs": "^2.3.5",
     "bootstrap": "^5.2.0",
     "dexie": "^3.2.2",
+    "net": "^1.0.2",
     "rxjs": "~7.5.0",
     "sockjs-client": "^1.6.1",
     "stompjs": "^2.3.3",
