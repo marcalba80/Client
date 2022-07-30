@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { ChatService } from '../_services/chat.service';
+import { StorageService } from '../_services/storage.service';
 
 @Component({
   selector: 'app-chat',
@@ -6,12 +8,13 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./chat.component.css']
 })
 export class ChatComponent implements OnInit {
-  content?: string;
+  isLoggedIn = false;
 
-  constructor() {
+  constructor(private storageService: StorageService, private chatService: ChatService) {
   }
 
   ngOnInit(): void {
+    this.isLoggedIn = this.storageService.isLoggedIn();
   }
 
 }
