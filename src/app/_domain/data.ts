@@ -1,4 +1,5 @@
 import Dexie, { Table } from 'dexie';
+import { XatImpl } from './XatImpl';
 
 export interface Xat{
     username: string;
@@ -15,8 +16,8 @@ export interface Missatge{
     usuariOrigen: string;
     usuariDesti: string;
     text: string;
-    data: string;
-    hora: string;
+    data?: string;
+    hora?: string;
 }
 
 export class AppDB extends Dexie{
@@ -25,18 +26,19 @@ export class AppDB extends Dexie{
 
     constructor(){
         super('ngdexieliveQuery');
-        this.version(3).stores({
+        this.version(4).stores({
             xat: 'username',
-            missatge: '++id, idXat',
+            missatge: '++id, idXat, [data+hora]',
         });
-        // this.on()
     }
 
     async resetDatabase() {
-        await db.transaction('rw', 'Xat', 'Missatge', () => {
-            this.xat.clear();
-            this.missatge.clear();
-        });
+        // await db.transaction('rw', 'Xat', 'Missatge', () => {
+        //     this.xat.clear();
+        //     this.missatge.clear();
+        // });
+        this.xat.clear();
+        this.missatge.clear();
     }
 }
 

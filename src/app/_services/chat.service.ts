@@ -3,7 +3,7 @@ import * as Stomp  from 'stompjs';
 import * as SockJS from 'sockjs-client';
 import { StorageService } from './storage.service';
 import { ChatRequest, MESSAGE, VALID_USER } from '../_payload/ChatRequest';
-import { db } from '../_domain/data';
+import { db } from '../_domain/Data';
 import { MissatgeImpl } from '../_domain/MissatgeImpl';
 import { XatImpl } from '../_domain/XatImpl';
 import { FormatWidth, getLocaleDateFormat } from '@angular/common';
@@ -64,15 +64,16 @@ export class ChatService {
     // }
     if(db.xat.get(msg.getUserFrom()) == undefined){
       db.xat.add(
-        new XatImpl(msg.getUserFrom())
+        new XatImpl(msg.getUserFrom(), '', '')
       );
     }
+    let missatge = new MissatgeImpl(msg, msg.getUserFrom());
     db.xat.update(msg.getUserFrom(), {
-      lastMsg: msg.getContent(),
-      lastDate: getLocaleDateFormat('es-ES', FormatWidth.Short)
+      lastMsg: missatge.text,
+      lastDate: missatge.data
     })
     db.missatge.add(
-      new MissatgeImpl(msg)
+      missatge
     );
     window.location.reload();
   }

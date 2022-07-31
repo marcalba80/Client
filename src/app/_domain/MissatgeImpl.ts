@@ -1,6 +1,7 @@
-import { FormatWidth, getLocaleDateFormat, getLocaleTimeFormat } from "@angular/common";
+import { DatePipe, getLocaleDateFormat } from "@angular/common";
+import { LOCALE_ID } from "@angular/core";
 import { ChatRequest } from "../_payload/ChatRequest";
-import { db, Missatge } from "./data";
+import { Missatge, db } from "./Data";
 import { XatImpl } from "./XatImpl";
 
 
@@ -9,16 +10,16 @@ export class MissatgeImpl implements Missatge{
     usuariOrigen: string;
     usuariDesti: string;
     text: string;
-    data: string;
-    hora: string;
+    data?: string;
+    hora?: string;
 
-    constructor(private chatRequest: ChatRequest){
-        this.idXat = chatRequest.getUserFrom();
+    constructor(private chatRequest: ChatRequest, private xat: string){
+        this.idXat = xat;
         this.usuariOrigen = chatRequest.getUserFrom();
         this.usuariDesti = chatRequest.getUserTo();
         this.text = chatRequest.getContent();
-        this.data = getLocaleDateFormat('es-ES', FormatWidth.Short);
-        this.hora = getLocaleTimeFormat('es-ES', FormatWidth.Short);
+        this.data = new DatePipe('es-ES').transform(new Date(), 'dd/MM/YYYY')?.toString();
+        this.hora = new DatePipe('es-ES').transform(new Date(), 'hh:mm')?.toString();
     }
 
     // private updateChat(msg: ChatRequest): void{

@@ -11,7 +11,7 @@
       <div class="inbox_people">
         <div class="headind_srch">
           <div class="recent_heading">
-            <h4>Recent</h4>
+            <h4>Xats</h4>
           </div>
           <div class="srch_bar">
             <div class="stylish-input-group">
@@ -22,34 +22,61 @@
           </div>
         </div>
         <div class="inbox_chat">
-          <div class="chat_list active_chat" *ngFor="let chat of chats">
-            <div class="chat_people">
-              <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
-              <div class="chat_ib">
-                <h5>{{ chat.username }} <span class="chat_date">{{ chat.lastDate }}</span></h5>
-                <p>{{ chat.lastMsg }}</p>
+          <!-- <table name="chatSel" [(ngModel)]="selected" (ngModelChange)="onChange($event)"> -->
+          <!-- <table name="chatSel"> -->
+          <!-- <table mat-table [dataSource]="chats"> -->
+            <div class="chat_list" *ngFor="let chat of chats" (click)="selMsg(chat)" [ngClass]="{ 'active_chat': chat.selected}">
+            <!-- <tr mat-row class="chat_list"> -->
+              <div class="chat_people" >
+                <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png"> </div>
+                <div class="chat_ib">
+                  <h5>{{ chat.c.username }} <span class="chat_date">{{ chat.c.lastDate }}</span></h5>
+                  <p>{{ chat.c.lastMsg }}</p>
+                </div>
               </div>
             </div>
-          </div>
+            <!-- <div class="chat_list">
+              <div class="chat_people">
+                <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
+                <div class="chat_ib">
+                  <h5>Sunil Rajput <span class="chat_date">Dec 25</span></h5>
+                  <p>Test, which is a new approach to have all solutions 
+                    astrology under one roof.</p>
+                </div>
+              </div>
+            </div> -->
+            <!-- <div class="chat_list">
+              <div class="chat_people">
+                <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
+                <div class="chat_ib">
+                  <h5>Sunil Rajput <span class="chat_date">Dec 25</span></h5>
+                  <p>Test, which is a new approach to have all solutions 
+                    astrology under one roof.</p>
+                </div>
+              </div>
+            </div> -->
+          <!-- </table> -->
         </div>
       </div>
       <div class="mesgs">
         <div class="msg_history">
-          <div class="incoming_msg">
-            <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
-            <div class="received_msg">
-              <div class="received_withd_msg">
-                <p>Test which is a new approach to have all
-                  solutions</p>
-                <span class="time_date"> 11:01 AM    |    June 9</span></div>
+          <div *ngFor="let msg of msgs">
+            <!-- <div class="incoming_msg"> -->
+            <div class="incoming_msg" *ngIf="msg.isIncoming">
+              <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png"> </div>
+              <div class="received_msg">
+                <div class="received_withd_msg">
+                  <p>{{ msg.m.text }}</p>
+                  <span class="time_date"> {{ msg.m.data }} | {{ msg.m.hora }}</span></div>
+              </div>
             </div>
-          </div>
-          <div class="outgoing_msg">
-            <div class="sent_msg">
-              <p>Test which is a new approach to have all
-                solutions</p>
-              <span class="time_date"> 11:01 AM    |    June 9</span> </div>
-          </div>     
+            <!-- <div class="outgoing_msg"> -->
+            <div class="outgoing_msg" *ngIf="!msg.isIncoming">
+              <div class="sent_msg">
+                <p>{{ msg.m.text }}</p>
+                <span class="time_date"> {{ msg.m.data }} | {{ msg.m.hora }}</span> </div>
+            </div> 
+          </div>    
         </div>
         <div class="type_msg">
           <div class="input_msg_write">
