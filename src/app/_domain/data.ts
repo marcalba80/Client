@@ -1,15 +1,17 @@
 import Dexie, { Table } from 'dexie';
 
 export interface Xat{
-    id?: number;
     username: string;
     clauPublicaO?: string;
+    clauPrivadaO?: string;
     clauPublicaD?: string;
+    lastMsg?: string;
+    lastDate?: string;
 }
 
 export interface Missatge{
     id?: number;
-    idXat: number;
+    idXat: string;
     usuariOrigen: string;
     usuariDesti: string;
     text: string;
@@ -18,13 +20,13 @@ export interface Missatge{
 }
 
 export class AppDB extends Dexie{
-    xat!: Table<Xat, number>;
+    xat!: Table<Xat, string>;
     missatge!: Table<Missatge, number>;
 
     constructor(){
         super('ngdexieliveQuery');
         this.version(3).stores({
-            xat: '++id',
+            xat: 'username',
             missatge: '++id, idXat',
         });
         // this.on()
