@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../_services/auth.service';
+import { ChatService } from '../_services/chat.service';
 import { StorageService } from '../_services/storage.service';
 
 @Component({
@@ -20,6 +21,7 @@ export class LoginComponent implements OnInit {
 
   constructor(private authService: AuthService, 
     private storageService: StorageService,
+    private chatService: ChatService,
     private router: Router){}
 
   ngOnInit(): void {
@@ -38,6 +40,7 @@ export class LoginComponent implements OnInit {
 
         this.isLoginFailed = false;
         this.isLoggedIn = true;
+        // this.chatService.connect();
         // this.roles = this.storageService.getUser().roles;
         this.reloadPage();
       },

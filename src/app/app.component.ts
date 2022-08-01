@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { AuthService } from './_services/auth.service';
+import { ChatService } from './_services/chat.service';
 import { StorageService } from './_services/storage.service';
 
 @Component({
@@ -13,7 +14,9 @@ export class AppComponent {
   // showAdminBoard = false;
   // showModeratorBoard = false;
 
-  constructor(private storageService: StorageService, private authService: AuthService){
+  constructor(private storageService: StorageService, 
+    private authService: AuthService,
+    private chatService: ChatService){
 
   }
 
@@ -30,10 +33,15 @@ export class AppComponent {
     this.authService.logout(this.username).subscribe({
       next: res => {
         console.log(res);
+        this.chatService.disconnect();
         this.storageService.clean();
       },
       error: err => {
         console.log(err);
+      },
+      complete: () => {
+        this.chatService.disconnect();
+        this.storageService.clean();
       }
     });
     window.location.reload();

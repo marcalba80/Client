@@ -42,6 +42,8 @@ export class ChatComponent implements OnInit {
     // db.missatge.add(new MissatgeImpl(
     //   new ChatRequest(5, 'Sample', 'user', 'Hola User'), 'Sample'
     // ));
+    if(this.storageService.isLoggedIn())
+      this.chatService.connect();
     this.setChats();
   }
 
@@ -69,6 +71,9 @@ export class ChatComponent implements OnInit {
 
   addUser(): void {
     console.log("AddUser " + this.addUsername)
+    if(this.addUsername !== undefined)
+      this.chatService.addUser(this.addUsername);
+    window.location.reload();
   }
 
   sendMsg(): void {
