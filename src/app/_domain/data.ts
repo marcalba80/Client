@@ -2,7 +2,9 @@ import Dexie, { Table } from 'dexie';
 import { XatImpl } from './XatImpl';
 
 export interface Xat{
-    username: string;
+    id?: number;
+    user1: string;
+    user2: string;
     clauPublicaO?: string;
     clauPrivadaO?: string;
     clauPublicaD?: string;
@@ -12,7 +14,8 @@ export interface Xat{
 
 export interface Missatge{
     id?: number;
-    idXat: string;
+    idXat1: string;
+    idXat2: string;
     usuariOrigen: string;
     usuariDesti: string;
     text: string;
@@ -25,12 +28,26 @@ export class AppDB extends Dexie{
     missatge!: Table<Missatge, number>;
 
     constructor(){
-        super('ngdexieliveQuery');
-        this.version(4).stores({
-            xat: 'username',
-            missatge: '++id, idXat, [data+hora]',
+        super('DBTexSec');
+        this.version(1).stores({
+            xat: '++id, user1, user2',
+            missatge: '++id, [idXat1+idXat2], [data+hora]',
         });
+        // this.version(4).stores({
+        //     xat: 'username',
+        //     missatge: '++id, idXat, [data+hora]',
+        // });
+        // this.resetDatabase().then(db => {
+        //     this.version(1).stores({
+        //         xat: 'user1, user2',
+        //         missatge: '++id, idXat1, idXat2, [data+hora]',
+        //     });
+        // })
     }
+
+    // private recreate(){
+    //     return db.delete().then(() => db.open());
+    // }
 
     async resetDatabase() {
         // await db.transaction('rw', 'Xat', 'Missatge', () => {

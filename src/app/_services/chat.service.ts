@@ -45,6 +45,7 @@ export class ChatService {
   }
 
   private processMessage(msg: ChatRequest): void{
+    console.log("Rcv: " + msg);
     switch(msg.getType()){
       case VALID_USER:
         this.addXat(msg);
@@ -59,14 +60,18 @@ export class ChatService {
         this.missatgeText(msg);
         break;
     }
-    
+    window.location.reload();
   }
 
   private addXat(msg: ChatRequest): void{
-    console.log("AddXat")
+    console.log("AddXat: " + msg.getUserTo())
     db.xat.add(
-      new XatImpl(msg.getUserTo(), '', '')
-    );
+      new XatImpl(msg.getUserTo(), msg.getUserFrom(), '', '')
+    );/*.then(st => {
+
+    }, err => {
+      console.log("AddXatErr: " + err);
+    });*/
   }
 
   private missatgeText(msg: ChatRequest): void {
@@ -75,24 +80,55 @@ export class ChatService {
     //     new 
     //   )
     // }
-    if(db.xat.get(msg.getUserFrom()) == undefined){
-      db.xat.add(
-        new XatImpl(msg.getUserFrom(), '', '')
-      );
-    }
-    let missatge = new MissatgeImpl(msg, msg.getUserFrom());
-    db.xat.update(msg.getUserFrom(), {
+    // if(db.xat.get(msg.getUserFrom()).then() == undefined){
+    //   db.xat.add(
+    //     new XatImpl(msg.getUserFrom(), '', '')
+    //   );
+    // }
+    let missatge = new MissatgeImpl(msg, msg.getUserFrom(), msg.getUserTo());
+    db.xat.get({user1: msg.getUserFrom(), user2: msg.getUserTo()}).then(item => {
+      if(item == undefined){
+        db.xat.add(
+          new XatImpl(msg.getUserFrom(), msg.getUserTo(), missatge.text, missatge.data)
+        );
+      }
+    });
+    
+    // db.xat.update({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}, {
+    //   lastMsg: missatge.text,
+    //   lastDate: missatge.data
+    // });
+    db.xat.where({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).modify({
       lastMsg: missatge.text,
       lastDate: missatge.data
-    })
+    });
     db.missatge.add(
       missatge
     );
-    window.location.reload();
+    // window.location.reload();
   }
 
   addUser(userTo: string): void{
     this.sendMessage(new ChatRequest(VALID_USER, this.storageService.getUser().username, userTo, ""));
+  }
+
+  sendText(text: string, userTo: string): void{
+    console.log("sendMsg userTo: " + userTo);
+    let missatge = new ChatRequest(MESSAGE, this.storageService.getUser().username, userTo, text);
+    let mf = new MissatgeImpl(missatge, missatge.getUserTo(), missatge.getUserFrom());
+    if(userTo != "")
+      this.sendMessage(missatge);
+      db.missatge.add(
+        mf
+      );
+      db.xat.where({'user1': missatge.getUserTo(), 'user2': missatge.getUserFrom()}).modify({
+          lastMsg: mf.text,
+          lastDate: mf.data
+      });
+      // db.xat.update({'user1': missatge.getUserTo(), 'user2': missatge.getUserFrom()}, {
+      //   lastMsg: mf.text,
+      //   lastDate: mf.data
+      // })
   }
 
   sendMessage(chatRequest: ChatRequest): void{

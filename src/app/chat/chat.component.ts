@@ -42,24 +42,32 @@ export class ChatComponent implements OnInit {
     // db.missatge.add(new MissatgeImpl(
     //   new ChatRequest(5, 'Sample', 'user', 'Hola User'), 'Sample'
     // ));
-    if(this.storageService.isLoggedIn())
+    // db.delete();
+    let selected = localStorage.getItem('selected')?.toString();
+    if(this.storageService.isLoggedIn()){
       this.chatService.connect();
-    this.setChats();
+      this.setChats(selected);
+    }
+    // localStorage.clear();
+    console.log("Init sel: " + selected);
+    // if(selected != null)
+    //   this.restoreSel(selected);
   }
 
-  private setChats(){
-    db.xat.toArray().then(list => {
+  private setChats(sel?: string){
+      // db.xat.toArray().then(list => {
+      db.xat.where({user2: this.storageService.getUser().username}).toArray(list => {
       list.forEach(chat => {
-        this.chats.push({
-          c: chat,
-          selected: false
-        });
+        console.log("setChat" + chat.user2);
+        let xat = {c: chat, selected: false};
+        this.chats.push(xat);
+        if(chat.user1 == sel) this.selMsg(xat);
       })
     });
   }
 
   private setMsgs(chat: Xat){
-    db.missatge.where('idXat').equals(chat.username).sortBy('[data+hora]').then(list => {
+    db.missatge.where({idXat1: chat.user1, idXat2: chat.user2})/*.equals({idXat1: chat.user1, idXat2: chat.user2})*/.sortBy('[data+hora]').then(list => {
       list.forEach(msg => {
         this.msgs.push({
           m: msg,
@@ -73,19 +81,49 @@ export class ChatComponent implements OnInit {
     console.log("AddUser " + this.addUsername)
     if(this.addUsername !== undefined)
       this.chatService.addUser(this.addUsername);
-    window.location.reload();
+    // window.location.reload();
   }
 
   sendMsg(): void {
     console.log("sendMsg: "+ this.msg)
+    if(this.msg !== undefined)
+      this.chatService.sendText(this.msg, this.chatSelectedUser());
+    window.location.reload();
   }
 
-  selMsg(chat: Chats): void{
-    console.log("selMsg Chat: " + chat.c.username)
+  selMsg(xat: Chats): void{
+    console.log("selMsg Chat: " + xat.c.user1)
     this.chats.forEach(chat => {
-      chat.selected = false;
+      if(chat.c.user1 == xat.c.user1) chat.selected = true;
+      else chat.selected = false;
     });
-    chat.selected = true;
-    this.setMsgs(chat.c);
+    // this.chats.forEach(chat => {
+    //   console.log("selected: " + chat.selected);
+    // });
+    // chat.selected = true;
+    
+    this.msgs = [];
+    // if(!xat.selected)
+      this.setMsgs(xat.c);
+    localStorage.setItem('selected', xat.c.user1);
+  }
+
+  // private restoreSel(userSel: string): void{
+    
+  //   this.chats.forEach(chat => {
+  //     console.log("restUser " + chat.c.username);
+  //     // if(chat.c.username == userSel) ;
+  //   });
+  // }
+
+  chatSelectedUser(): string{
+    let ret = "";
+    this.chats.forEach(chat => {
+      if(chat.selected){
+        console.log("selected chat: " + chat.c.user1);
+        ret = chat.c.user1;
+      } 
+    })
+    return ret;
   }
 }

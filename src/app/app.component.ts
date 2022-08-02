@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from './_services/auth.service';
 import { ChatService } from './_services/chat.service';
 import { StorageService } from './_services/storage.service';
@@ -16,7 +17,8 @@ export class AppComponent {
 
   constructor(private storageService: StorageService, 
     private authService: AuthService,
-    private chatService: ChatService){
+    private chatService: ChatService,
+    private router: Router){
 
   }
 
@@ -33,17 +35,24 @@ export class AppComponent {
     this.authService.logout(this.username).subscribe({
       next: res => {
         console.log(res);
-        this.chatService.disconnect();
-        this.storageService.clean();
+        // this.chatService.disconnect();
+        // this.storageService.clean();
+        // localStorage.removeItem('selected');
+        // this.router.navigate(['/login']).then(() => {
+        //   window.location.reload();
+        // });
       },
       error: err => {
         console.log(err);
-      },
-      complete: () => {
-        this.chatService.disconnect();
-        this.storageService.clean();
       }
     });
-    window.location.reload();
+    this.storageService.clean();
+    // this.authService.logout();
+    this.chatService.disconnect();
+    // this.storageService.clean();
+    localStorage.removeItem('selected');
+    // this.router.navigate(['/login']).then(() => {
+      // window.location.reload();
+    // });
   }
 }

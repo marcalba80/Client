@@ -1,21 +1,24 @@
 import { Xat } from "./Data";
 
 export class XatImpl implements Xat{
-    username: string;
+    user1: string;
+    user2: string;
     clauPublicaO?: string;
     clauPrivadaO?: string;
     clauPublicaD?: string;
     lastMsg?: string;
     lastDate?: string;
 
-    constructor(username: string, 
+    constructor(user1: string, 
+        user2: string,
         // clauPublicaO: string,
         // clauPrivadaO: string,
         // clauPublicaD: string,
-        lastMsg: string, lastDate: string
+        lastMsg: string, lastDate?: string
         )
     {
-        this.username = username;
+        this.user1 = user1;
+        this.user2 = user2;
         // this.clauPublicaO = clauPublicaO;
         // this.clauPrivadaO = clauPrivadaO;
         // this.clauPublicaD = clauPublicaD;
