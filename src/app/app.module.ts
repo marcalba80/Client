@@ -13,6 +13,8 @@ import { ProfileComponent } from './profile/profile.component';
 
 import es from '@angular/common/locales/es';
 import { registerLocaleData } from '@angular/common';
+import { ChatService } from './_services/chat.service';
+import { StorageService } from './_services/storage.service';
 
 registerLocaleData(es);
 
@@ -32,6 +34,8 @@ registerLocaleData(es);
   ],
   providers: [
     httpInterceptorProviders,
+    ChatService,
+    StorageService,
     {provide: LOCALE_ID, useValue: 'es-*'},
   ],
   bootstrap: [AppComponent]

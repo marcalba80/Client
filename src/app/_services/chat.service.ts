@@ -2,10 +2,16 @@ import { Injectable } from '@angular/core';
 import * as Stomp  from 'stompjs';
 import * as SockJS from 'sockjs-client';
 import { StorageService } from './storage.service';
-import { ChatRequest, MESSAGE, VALID_USER } from '../_payload/ChatRequest';
 import { db } from '../_domain/Data';
 import { MissatgeImpl } from '../_domain/MissatgeImpl';
 import { XatImpl } from '../_domain/XatImpl';
+import { Observable, Subject } from 'rxjs';
+
+import { ChatRequest, 
+  MESSAGE, 
+  VALID_USER, 
+  ERROR, 
+  COMPLETED } from '../_payload/ChatRequest';
 
 const CHAT_ENDP = 'http://localhost:8080/api/ws';
 // const CHAT_URL = 'http://localhost:8080/api/chat';
@@ -18,8 +24,14 @@ export const stompClient = Stomp.over(new SockJS(CHAT_ENDP));
 export class ChatService {
   // stompClient = Stomp.over(new SockJS(CHAT_ENDP));
   // stompClient = Stomp.over(new WebSocket(CHAT_ENDP))
+  errorSubject: Subject<ChatRequest> = new Subject(); 
+  errorSubject$: Observable<ChatRequest> = this.errorSubject.asObservable();
+  
+  // obser: Observable<any> = new Observable.;
 
-  constructor(private storageService: StorageService) { }
+  constructor(private storageService: StorageService) { 
+    // this.errorSubject.complete();
+  }
 
   connect() {
     stompClient.connect({}, this.onConnect, this.onError);
@@ -45,7 +57,7 @@ export class ChatService {
   }
 
   private processMessage(msg: ChatRequest): void{
-    console.log("Rcv: " + msg);
+    console.log("Rcv: " + msg.type);
     switch(msg.getType()){
       case VALID_USER:
         this.addXat(msg);
@@ -59,8 +71,14 @@ export class ChatService {
       case MESSAGE:
         this.missatgeText(msg);
         break;
+      case ERROR:
+        this.errorSubject.next(msg);
+        break;
+      case COMPLETED:
+        this.errorSubject.complete();
+        break;
     }
-    window.location.reload();
+    // window.location.reload();
   }
 
   private addXat(msg: ChatRequest): void{
@@ -72,6 +90,7 @@ export class ChatService {
     }, err => {
       console.log("AddXatErr: " + err);
     });*/
+    window.location.reload();
   }
 
   private missatgeText(msg: ChatRequest): void {
@@ -105,7 +124,7 @@ export class ChatService {
     db.missatge.add(
       missatge
     );
-    // window.location.reload();
+    window.location.reload();
   }
 
   addUser(userTo: string): void{
@@ -115,16 +134,16 @@ export class ChatService {
   sendText(text: string, userTo: string): void{
     console.log("sendMsg userTo: " + userTo);
     let missatge = new ChatRequest(MESSAGE, this.storageService.getUser().username, userTo, text);
-    let mf = new MissatgeImpl(missatge, missatge.getUserTo(), missatge.getUserFrom());
+    // let mf = new MissatgeImpl(missatge, missatge.getUserTo(), missatge.getUserFrom());
     if(userTo != "")
       this.sendMessage(missatge);
-      db.missatge.add(
-        mf
-      );
-      db.xat.where({'user1': missatge.getUserTo(), 'user2': missatge.getUserFrom()}).modify({
-          lastMsg: mf.text,
-          lastDate: mf.data
-      });
+      // db.missatge.add(
+      //   mf
+      // );
+      // db.xat.where({'user1': missatge.getUserTo(), 'user2': missatge.getUserFrom()}).modify({
+      //     lastMsg: mf.text,
+      //     lastDate: mf.data
+      // });
       // db.xat.update({'user1': missatge.getUserTo(), 'user2': missatge.getUserFrom()}, {
       //   lastMsg: mf.text,
       //   lastDate: mf.data

@@ -1,5 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { db, Missatge, Xat } from '../_domain/Data';
+import { MissatgeImpl } from '../_domain/MissatgeImpl';
+import { ChatRequest, MESSAGE } from '../_payload/ChatRequest';
 import { ChatService } from '../_services/chat.service';
 import { StorageService } from '../_services/storage.service';
 
@@ -18,7 +21,7 @@ export interface Msgs{
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css']
 })
-export class ChatComponent implements OnInit {
+export class ChatComponent implements OnInit, OnDestroy {
   isLoggedIn = false;
   addUsername?: string;
   msg?: string;
@@ -26,23 +29,22 @@ export class ChatComponent implements OnInit {
   // msgs: {m: Missatge, isIncoming: boolean}[];
   chats: Chats[];
   msgs: Msgs[];
+  errorChat: boolean = false;
+  errorMsg?: string;
 
-  constructor(private storageService: StorageService, private chatService: ChatService) {
+  constructor(private storageService: StorageService, 
+    private cdRef: ChangeDetectorRef,
+    private chatService: ChatService) {
     this.chats = [];
     this.msgs = [];
+    // this.errorChat = false;
   }
 
   ngOnInit(): void {
     this.isLoggedIn = this.storageService.isLoggedIn();
     // db.resetDatabase();
-    // db.xat.add(new XatImpl('Sample', 'Hola', 'Avui'));
-    // db.missatge.add(new MissatgeImpl(
-    //   new ChatRequest(5, 'user', 'Sample', 'Hola Sample'), 'Sample'
-    // ));
-    // db.missatge.add(new MissatgeImpl(
-    //   new ChatRequest(5, 'Sample', 'user', 'Hola User'), 'Sample'
-    // ));
     // db.delete();
+
     let selected = localStorage.getItem('selected')?.toString();
     if(this.storageService.isLoggedIn()){
       this.chatService.connect();
@@ -52,13 +54,35 @@ export class ChatComponent implements OnInit {
     console.log("Init sel: " + selected);
     // if(selected != null)
     //   this.restoreSel(selected);
+    this.chatService.errorSubject.subscribe({
+      next: async res => {
+        this.errorChat = true;
+        this.errorMsg = res.content;
+        console.log("SubjectN");
+        this.cdRef.detectChanges();
+      },
+      error: err => {
+        console.log("SubjectE");
+      },
+      complete: () =>{
+        console.log("SubjectC")
+        this.errorChat = false;
+        if(this.msg !== undefined)
+          this.sendCompleted(this.msg, this.chatSelectedUser())
+        window.location.reload();
+      }
+    });
+  }
+
+  ngOnDestroy(){
+    this.chatService.errorSubject.unsubscribe();
   }
 
   private setChats(sel?: string){
       // db.xat.toArray().then(list => {
+      console.log("setChat " + sel);
       db.xat.where({user2: this.storageService.getUser().username}).toArray(list => {
-      list.forEach(chat => {
-        console.log("setChat" + chat.user2);
+      list.forEach(chat => {        
         let xat = {c: chat, selected: false};
         this.chats.push(xat);
         if(chat.user1 == sel) this.selMsg(xat);
@@ -86,9 +110,23 @@ export class ChatComponent implements OnInit {
 
   sendMsg(): void {
     console.log("sendMsg: "+ this.msg)
-    if(this.msg !== undefined)
+    if(this.msg !== undefined){
       this.chatService.sendText(this.msg, this.chatSelectedUser());
-    window.location.reload();
+      // window.location.reload();
+      
+    }
+  }
+
+  private sendCompleted(text: string, userTo: string): void{
+    let missatge = new ChatRequest(MESSAGE, this.storageService.getUser().username, userTo, text);
+    let mf = new MissatgeImpl(missatge, missatge.getUserTo(), missatge.getUserFrom());
+    db.missatge.add(
+      mf
+    );
+    db.xat.where({'user1': missatge.getUserTo(), 'user2': missatge.getUserFrom()}).modify({
+        lastMsg: mf.text,
+        lastDate: mf.data
+    });
   }
 
   selMsg(xat: Chats): void{
@@ -101,7 +139,7 @@ export class ChatComponent implements OnInit {
     //   console.log("selected: " + chat.selected);
     // });
     // chat.selected = true;
-    
+    this.errorChat = false;
     this.msgs = [];
     // if(!xat.selected)
       this.setMsgs(xat.c);

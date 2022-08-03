@@ -1,5 +1,7 @@
 export const VALID_USER = 1;
 export const MESSAGE = 5;
+export const ERROR = 6;
+export const COMPLETED = 7;
 
 export class ChatRequest{
     type: number;

@@ -35,22 +35,22 @@ export class AppComponent {
     this.authService.logout(this.username).subscribe({
       next: res => {
         console.log(res);
-        // this.chatService.disconnect();
-        // this.storageService.clean();
-        // localStorage.removeItem('selected');
+        this.chatService.disconnect();
+        this.storageService.clean();
+        localStorage.removeItem('selected');
         // this.router.navigate(['/login']).then(() => {
-        //   window.location.reload();
+        window.location.reload();
         // });
       },
       error: err => {
         console.log(err);
       }
     });
-    this.storageService.clean();
-    // this.authService.logout();
-    this.chatService.disconnect();
     // this.storageService.clean();
-    localStorage.removeItem('selected');
+    // this.authService.logout();
+    // this.chatService.disconnect();
+    // this.storageService.clean();
+    // localStorage.removeItem('selected');
     // this.router.navigate(['/login']).then(() => {
       // window.location.reload();
     // });
