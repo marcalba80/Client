@@ -15,6 +15,8 @@ import es from '@angular/common/locales/es';
 import { registerLocaleData } from '@angular/common';
 import { ChatService } from './_services/chat.service';
 import { StorageService } from './_services/storage.service';
+import { AuthService } from './_services/auth.service';
+import { CryptService } from './_services/crypt.service';
 
 registerLocaleData(es);
 
@@ -36,6 +38,8 @@ registerLocaleData(es);
     httpInterceptorProviders,
     ChatService,
     StorageService,
+    AuthService,
+    CryptService,
     {provide: LOCALE_ID, useValue: 'es-*'},
   ],
   bootstrap: [AppComponent]

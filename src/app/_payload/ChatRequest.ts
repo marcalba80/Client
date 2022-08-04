@@ -1,4 +1,5 @@
 export const VALID_USER = 1;
+export const SEND_RSA = 2;
 export const MESSAGE = 5;
 export const ERROR = 6;
 export const COMPLETED = 7;
@@ -7,12 +8,12 @@ export class ChatRequest{
     type: number;
     userFrom: string;
     userTo: string;
-    content: string;
+    content: any;
 
     constructor(type: number,
         userFrom: string,
         userTo: string,
-        content: string)
+        content: any)
     {
             this.type = type;
             this.userFrom = userFrom;

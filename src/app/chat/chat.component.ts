@@ -1,5 +1,4 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { db, Missatge, Xat } from '../_domain/Data';
 import { MissatgeImpl } from '../_domain/MissatgeImpl';
 import { ChatRequest, MESSAGE } from '../_payload/ChatRequest';
@@ -55,7 +54,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     // if(selected != null)
     //   this.restoreSel(selected);
     this.chatService.errorSubject.subscribe({
-      next: async res => {
+      next: res => {
         this.errorChat = true;
         this.errorMsg = res.content;
         console.log("SubjectN");
@@ -71,6 +70,9 @@ export class ChatComponent implements OnInit, OnDestroy {
           this.sendCompleted(this.msg, this.chatSelectedUser())
         window.location.reload();
       }
+    });
+    this.chatService.keySubject.subscribe({
+      
     });
   }
 

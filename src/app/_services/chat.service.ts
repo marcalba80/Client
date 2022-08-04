@@ -5,13 +5,16 @@ import { StorageService } from './storage.service';
 import { db } from '../_domain/Data';
 import { MissatgeImpl } from '../_domain/MissatgeImpl';
 import { XatImpl } from '../_domain/XatImpl';
-import { Observable, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 
 import { ChatRequest, 
   MESSAGE, 
   VALID_USER, 
   ERROR, 
-  COMPLETED } from '../_payload/ChatRequest';
+  COMPLETED, 
+  SEND_RSA} from '../_payload/ChatRequest';
+import { CryptService } from './crypt.service';
+import { JsonWebKeyPair } from 'js-crypto-rsa/dist/typedef';
 
 const CHAT_ENDP = 'http://localhost:8080/api/ws';
 // const CHAT_URL = 'http://localhost:8080/api/chat';
@@ -25,11 +28,12 @@ export class ChatService {
   // stompClient = Stomp.over(new SockJS(CHAT_ENDP));
   // stompClient = Stomp.over(new WebSocket(CHAT_ENDP))
   errorSubject: Subject<ChatRequest> = new Subject(); 
-  errorSubject$: Observable<ChatRequest> = this.errorSubject.asObservable();
+  keySubject: Subject<ChatRequest> = new Subject();
   
   // obser: Observable<any> = new Observable.;
 
-  constructor(private storageService: StorageService) { 
+  constructor(private storageService: StorageService, 
+    private cryptService: CryptService) { 
     // this.errorSubject.complete();
   }
 
@@ -62,7 +66,8 @@ export class ChatService {
       case VALID_USER:
         this.addXat(msg);
         break;
-      case 2:
+      case SEND_RSA:
+        this.rcvRSAKey(msg);
         break;
       case 3:
         break;
@@ -83,14 +88,69 @@ export class ChatService {
 
   private addXat(msg: ChatRequest): void{
     console.log("AddXat: " + msg.getUserTo())
-    db.xat.add(
-      new XatImpl(msg.getUserTo(), msg.getUserFrom(), '', '')
-    );/*.then(st => {
+    // let key: JsonWebKeyPair; 
+    this.cryptService.generateRSAKey().then(key =>{
+      // key = res;
+      console.log("KeyGen: " + key);
+      db.xat.add(
+        new XatImpl(msg.getUserTo(), msg.getUserFrom(), key.publicKey, key.privateKey, undefined, '', '')
+      );
+      this.sendMessage(new ChatRequest(SEND_RSA, msg.getUserFrom(), msg.getUserTo(), key.publicKey));
+    });
+    // db.xat.add(
+      // new XatImpl(msg.getUserTo(), msg.getUserFrom(), key.publicKey, key.privateKey, undefined, '', '')
+    // );
+    /*.then(st => {
 
     }, err => {
       console.log("AddXatErr: " + err);
     });*/
-    window.location.reload();
+    // window.location.reload();
+  }
+
+  private rcvRSAKey(msg: ChatRequest): void{
+    let pKey: JsonWebKey = msg.content;
+    console.log("KeyRcv: " + pKey);
+    db.xat.get({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).then(val => {
+      if(val == undefined){
+        console.log("xatUndefined");
+        this.cryptService.generateRSAKey().then(key =>{
+          db.xat.add(
+            new XatImpl(msg.getUserFrom(), msg.getUserTo(), key.publicKey, key.privateKey, pKey, '', '')
+          );
+          this.sendMessage(new ChatRequest(SEND_RSA, msg.getUserTo(), msg.getUserFrom(), key.publicKey));
+        });
+      }else{
+        console.log("xatDefined");
+        db.xat.where({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).modify({
+          clauPublicaD: pKey,
+        });
+      }  
+    });
+    // if(db.xat.get({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).then() == undefined){
+    //   console.log("xatUndefined");
+    //   this.cryptService.generateRSAKey().then(key =>{
+    //     db.xat.add(
+    //       new XatImpl(msg.getUserFrom(), msg.getUserTo(), key.publicKey, key.privateKey, pKey, '', '')
+    //     );
+    //     this.sendMessage(new ChatRequest(SEND_RSA, msg.getUserTo(), msg.getUserFrom(), key.publicKey));
+    //   });
+    // }else{
+    //   console.log("xatDefined");
+    //   db.xat.where({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).modify({
+    //     clauPublicaD: pKey,
+    //   });
+    // }
+    //   if(db.xat.get({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).then() == undefined){
+    //     db.xat.add(
+    //       new XatImpl(msg.getUserFrom(), msg.getUserTo(), key.publicKey, key.privateKey, pKey, '', '')
+    //     );
+    //   }
+    // })
+    // db.xat.where({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).modify({
+    //   clauPublicaD: pKey,
+    // });
+    this.keySubject.next(msg);
   }
 
   private missatgeText(msg: ChatRequest): void {
@@ -108,7 +168,7 @@ export class ChatService {
     db.xat.get({user1: msg.getUserFrom(), user2: msg.getUserTo()}).then(item => {
       if(item == undefined){
         db.xat.add(
-          new XatImpl(msg.getUserFrom(), msg.getUserTo(), missatge.text, missatge.data)
+          new XatImpl(msg.getUserFrom(), msg.getUserTo(), undefined, undefined, undefined, missatge.text, missatge.data)
         );
       }
     });
