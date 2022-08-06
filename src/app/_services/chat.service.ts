@@ -6,15 +6,16 @@ import { db } from '../_domain/Data';
 import { MissatgeImpl } from '../_domain/MissatgeImpl';
 import { XatImpl } from '../_domain/XatImpl';
 import { Subject } from 'rxjs';
+import { CryptService } from './crypt.service';
+import { AuthRSA } from '../_helpers/AuthRSA';
 
 import { ChatRequest, 
   MESSAGE, 
   VALID_USER, 
   ERROR, 
   COMPLETED, 
-  SEND_RSA} from '../_payload/ChatRequest';
-import { CryptService } from './crypt.service';
-import { JsonWebKeyPair } from 'js-crypto-rsa/dist/typedef';
+  SEND_RSA,
+  SEND_RSA_ACK} from '../_payload/ChatRequest';
 
 const CHAT_ENDP = 'http://localhost:8080/api/ws';
 // const CHAT_URL = 'http://localhost:8080/api/chat';
@@ -28,7 +29,7 @@ export class ChatService {
   // stompClient = Stomp.over(new SockJS(CHAT_ENDP));
   // stompClient = Stomp.over(new WebSocket(CHAT_ENDP))
   errorSubject: Subject<ChatRequest> = new Subject(); 
-  keySubject: Subject<ChatRequest> = new Subject();
+  keySubject: Subject<AuthRSA> = new Subject();
   
   // obser: Observable<any> = new Observable.;
 
@@ -68,8 +69,6 @@ export class ChatService {
         break;
       case SEND_RSA:
         this.rcvRSAKey(msg);
-        break;
-      case 3:
         break;
       case 4:
         break;
@@ -113,44 +112,30 @@ export class ChatService {
     console.log("KeyRcv: " + pKey);
     db.xat.get({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).then(val => {
       if(val == undefined){
-        console.log("xatUndefined");
-        this.cryptService.generateRSAKey().then(key =>{
+        this.cryptService.generateRSAKey().then(key => {
+          console.log("xatUndefined");
+        
           db.xat.add(
-            new XatImpl(msg.getUserFrom(), msg.getUserTo(), key.publicKey, key.privateKey, pKey, '', '')
-          );
+            new XatImpl(msg.getUserFrom(), msg.getUserTo(), key.publicKey, key.privateKey, undefined, '', '')
+          );          
           this.sendMessage(new ChatRequest(SEND_RSA, msg.getUserTo(), msg.getUserFrom(), key.publicKey));
-        });
+          // this.keySubject.next(new XatImpl(msg.getUserFrom(), msg.getUserTo(), key.publicKey, key.privateKey, pKey, '', ''));
+          this.keySubject.next({
+            xat: new XatImpl(msg.getUserFrom(), msg.getUserTo(), key.publicKey, key.privateKey, pKey, '', ''),
+            userR: false});
+        });    
       }else{
         console.log("xatDefined");
-        db.xat.where({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).modify({
-          clauPublicaD: pKey,
-        });
-      }  
+        // db.xat.where({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).modify({
+        //   clauPublicaD: pKey,
+        // });
+        this.keySubject.next({
+          xat: new XatImpl(msg.getUserFrom(), msg.getUserTo(), val.clauPublicaO, val.clauPrivadaO, pKey, '', ''),
+          userR: true});
+      }   
     });
-    // if(db.xat.get({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).then() == undefined){
-    //   console.log("xatUndefined");
-    //   this.cryptService.generateRSAKey().then(key =>{
-    //     db.xat.add(
-    //       new XatImpl(msg.getUserFrom(), msg.getUserTo(), key.publicKey, key.privateKey, pKey, '', '')
-    //     );
-    //     this.sendMessage(new ChatRequest(SEND_RSA, msg.getUserTo(), msg.getUserFrom(), key.publicKey));
-    //   });
-    // }else{
-    //   console.log("xatDefined");
-    //   db.xat.where({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).modify({
-    //     clauPublicaD: pKey,
-    //   });
-    // }
-    //   if(db.xat.get({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).then() == undefined){
-    //     db.xat.add(
-    //       new XatImpl(msg.getUserFrom(), msg.getUserTo(), key.publicKey, key.privateKey, pKey, '', '')
-    //     );
-    //   }
-    // })
-    // db.xat.where({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).modify({
-    //   clauPublicaD: pKey,
-    // });
-    this.keySubject.next(msg);
+    
+    // this.keySubject.next(new XatImpl(msg.getUserFrom(), msg.getUserTo(), undefined, undefined, pKey, '', ''));
   }
 
   private missatgeText(msg: ChatRequest): void {

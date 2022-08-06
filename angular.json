@@ -28,7 +28,9 @@
             "inlineStyleLanguage": "css",
             "allowedCommonJsDependencies": [
               "stompjs",
-              "sockjs-client"
+              "sockjs-client",
+              "crypto-js",
+              "js-crypto-rsa"
             ],
             "assets": [
               "src/favicon.ico",

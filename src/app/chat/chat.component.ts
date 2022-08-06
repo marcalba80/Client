@@ -1,8 +1,11 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { DialogComponent } from '../dialog/dialog.component';
 import { db, Missatge, Xat } from '../_domain/Data';
 import { MissatgeImpl } from '../_domain/MissatgeImpl';
 import { ChatRequest, MESSAGE } from '../_payload/ChatRequest';
 import { ChatService } from '../_services/chat.service';
+import { CryptService } from '../_services/crypt.service';
 import { StorageService } from '../_services/storage.service';
 
 export interface Chats{
@@ -33,7 +36,11 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   constructor(private storageService: StorageService, 
     private cdRef: ChangeDetectorRef,
-    private chatService: ChatService) {
+    private chatService: ChatService,
+    private cryptService: CryptService,
+    private zone: NgZone,
+    public dialog: MatDialog) {
+    
     this.chats = [];
     this.msgs = [];
     // this.errorChat = false;
@@ -53,6 +60,41 @@ export class ChatComponent implements OnInit, OnDestroy {
     console.log("Init sel: " + selected);
     // if(selected != null)
     //   this.restoreSel(selected);
+    this.errorSub();
+    this.keySub();
+  }
+
+  private keySub(): void {
+    
+    this.chatService.keySubject.subscribe({
+      next: res => {
+        let key = this.cryptService.hashM(res.userR, res.xat.clauPublicaO, res.xat.clauPublicaD);
+        console.log("KeyH: " + key);
+        this.zone.run(() => {
+          const dialogRef = this.dialog.open(DialogComponent, {
+            width: 'auto',
+            // height: '500px',
+            data: {
+              xat: res.xat,
+              key: key
+            }
+          });
+          dialogRef.afterClosed().subscribe(res => {
+            window.location.reload();
+          });
+        })                        
+        
+      },
+      error: err => {
+
+      },
+      complete: () => {
+        
+      }
+    });
+  }
+
+  private errorSub(): void {
     this.chatService.errorSubject.subscribe({
       next: res => {
         this.errorChat = true;
@@ -71,13 +113,11 @@ export class ChatComponent implements OnInit, OnDestroy {
         window.location.reload();
       }
     });
-    this.chatService.keySubject.subscribe({
-      
-    });
   }
 
   ngOnDestroy(){
     this.chatService.errorSubject.unsubscribe();
+    this.chatService.keySubject.unsubscribe();
   }
 
   private setChats(sel?: string){

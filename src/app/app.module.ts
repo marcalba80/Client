@@ -1,5 +1,7 @@
 import { LOCALE_ID, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { MatDialogModule, MAT_DIALOG_DEFAULT_OPTIONS } from '@angular/material/dialog';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -17,6 +19,8 @@ import { ChatService } from './_services/chat.service';
 import { StorageService } from './_services/storage.service';
 import { AuthService } from './_services/auth.service';
 import { CryptService } from './_services/crypt.service';
+import { DialogComponent } from './dialog/dialog.component';
+import { MatButtonModule } from '@angular/material/button';
 
 registerLocaleData(es);
 
@@ -26,13 +30,20 @@ registerLocaleData(es);
     LoginComponent,
     RegisterComponent,
     ChatComponent,
-    ProfileComponent
+    ProfileComponent,
+    DialogComponent
   ],
+  // entryComponents: [
+  //   DialogComponent
+  // ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     AppRoutingModule,
     FormsModule,
-    HttpClientModule
+    HttpClientModule,
+    MatDialogModule,
+    MatButtonModule
   ],
   providers: [
     httpInterceptorProviders,

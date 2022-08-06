@@ -1,5 +1,6 @@
 export const VALID_USER = 1;
 export const SEND_RSA = 2;
+export const SEND_RSA_ACK = 3;
 export const MESSAGE = 5;
 export const ERROR = 6;
 export const COMPLETED = 7;

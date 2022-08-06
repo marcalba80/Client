@@ -1,0 +1,10 @@
+<title mat-dialog-title>Nou xat amb: {{data.xat.user1}}</title>
+<div mat-dialog-content>
+  <p>Comprova que les claus són iguals: <br>
+    <b>{{data.key}}</b>
+  </p>
+</div>
+<div mat-dialog-actions>
+  <button mat-button mat-dialog-close (click)="iguals()">Ho són</button>
+  <button mat-button mat-dialog-close (click)="onNoClick()" cdkFocusInitial>No ho són</button>
+</div>
