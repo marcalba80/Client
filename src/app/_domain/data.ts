@@ -5,9 +5,12 @@ export interface Xat{
     id?: number;
     user1: string;
     user2: string;
+    userIni: boolean;
     clauPublicaO?: JsonWebKey;
     clauPrivadaO?: JsonWebKey;
     clauPublicaD?: JsonWebKey;
+    randA?: string;
+    randB?: string;
     lastMsg?: string;
     lastDate?: string;
 }

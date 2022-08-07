@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService } from './_services/auth.service';
 import { ChatService } from './_services/chat.service';
 import { StorageService } from './_services/storage.service';
+import { WebSocketService } from './_services/web-socket.service';
 
 @Component({
   selector: 'app-root',
@@ -17,7 +18,7 @@ export class AppComponent {
 
   constructor(private storageService: StorageService, 
     private authService: AuthService,
-    private chatService: ChatService,
+    private websocketService: WebSocketService,
     private router: Router){
 
   }
@@ -35,7 +36,7 @@ export class AppComponent {
     this.authService.logout(this.username).subscribe({
       next: res => {
         console.log(res);
-        this.chatService.disconnect();
+        this.websocketService.disconnect();
         this.storageService.clean();
         localStorage.removeItem('selected');
         // this.router.navigate(['/login']).then(() => {

@@ -30,7 +30,8 @@
               "stompjs",
               "sockjs-client",
               "crypto-js",
-              "js-crypto-rsa"
+              "js-crypto-rsa",
+              "random-seed"
             ],
             "assets": [
               "src/favicon.ico",
@@ -47,7 +48,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "700kb",
-                  "maximumError": "1mb"
+                  "maximumError": "2mb"
                 },
                 {
                   "type": "anyComponentStyle",

@@ -21,6 +21,8 @@ import { AuthService } from './_services/auth.service';
 import { CryptService } from './_services/crypt.service';
 import { DialogComponent } from './dialog/dialog.component';
 import { MatButtonModule } from '@angular/material/button';
+import { WebSocketService } from './_services/web-socket.service';
+import { RandomSeedService } from './_services/random-seed-service.service';
 
 registerLocaleData(es);
 
@@ -51,6 +53,8 @@ registerLocaleData(es);
     StorageService,
     AuthService,
     CryptService,
+    WebSocketService,
+    RandomSeedService,
     {provide: LOCALE_ID, useValue: 'es-*'},
   ],
   bootstrap: [AppComponent]

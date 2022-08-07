@@ -6,7 +6,11 @@ import { MissatgeImpl } from '../_domain/MissatgeImpl';
 import { ChatRequest, MESSAGE } from '../_payload/ChatRequest';
 import { ChatService } from '../_services/chat.service';
 import { CryptService } from '../_services/crypt.service';
+import { RandomSeedService } from '../_services/random-seed-service.service';
+import { RndService } from '../_services/rnd-service.service';
+import { keySubject } from '../_services/rsaservice.service';
 import { StorageService } from '../_services/storage.service';
+import { WebSocketService } from '../_services/web-socket.service';
 
 export interface Chats{
   c: Xat;
@@ -33,13 +37,17 @@ export class ChatComponent implements OnInit, OnDestroy {
   msgs: Msgs[];
   errorChat: boolean = false;
   errorMsg?: string;
-
+  
   constructor(private storageService: StorageService, 
     private cdRef: ChangeDetectorRef,
-    private chatService: ChatService,
-    private cryptService: CryptService,
     private zone: NgZone,
-    public dialog: MatDialog) {
+    public dialog: MatDialog,
+    private websocketService: WebSocketService,
+    private chatService: ChatService,
+    private rndService: RndService,
+    private cryptService: CryptService,
+    private randomseedService: RandomSeedService,
+    ) {
     
     this.chats = [];
     this.msgs = [];
@@ -48,12 +56,12 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.isLoggedIn = this.storageService.isLoggedIn();
-    // db.resetDatabase();
+    db.resetDatabase();
     // db.delete();
-
+    
     let selected = localStorage.getItem('selected')?.toString();
     if(this.storageService.isLoggedIn()){
-      this.chatService.connect();
+      this.websocketService.connect();
       this.setChats(selected);
     }
     // localStorage.clear();
@@ -62,27 +70,41 @@ export class ChatComponent implements OnInit, OnDestroy {
     //   this.restoreSel(selected);
     this.errorSub();
     this.keySub();
+    this.randSub();
   }
 
   private keySub(): void {
-    
-    this.chatService.keySubject.subscribe({
+    // let auth: AuthRSA;
+    keySubject.subscribe({
       next: res => {
-        let key = this.cryptService.hashM(res.userR, res.xat.clauPublicaO, res.xat.clauPublicaD);
+        // auth = res;
+        let key = this.cryptService.hashM(res.userIni, res.clauPublicaO, res.clauPublicaD);
         console.log("KeyH: " + key);
         this.zone.run(() => {
           const dialogRef = this.dialog.open(DialogComponent, {
             width: 'auto',
             // height: '500px',
             data: {
-              xat: res.xat,
+              xat: res,
               key: key
             }
           });
-          dialogRef.afterClosed().subscribe(res => {
+          dialogRef.afterClosed().subscribe(ret => {
+            // if (auth.xat.clauPublicaD !== undefined)
+            //   this.chatService.sendRnd(auth.xat.user1, auth.xat.clauPublicaD);
+            db.xat.get({'user1': res.user1, 'user2': res.user2}).then(val => {
+              if(val !== undefined && val.clauPublicaD !== undefined)
+              this.rndService.sendRnd(val?.user1, val?.clauPublicaD);
+            });
+            // this.randomseedService.addRand(res.user1, this.cryptService.hashX(
+            //   res.userIni,
+            //   res.clauPublicaO,
+            //   res.clauPublicaD,
+            //   res.randA, res.randB
+            // ));
             window.location.reload();
           });
-        })                        
+        });
         
       },
       error: err => {
@@ -92,6 +114,19 @@ export class ChatComponent implements OnInit, OnDestroy {
         
       }
     });
+  }
+
+  private randSub(): void {
+    // randSubject.subscribe({
+    //   next: res => {
+    //     // this.randomseedService.addRand(res.user1, this.cryptService.hashX(
+    //     //   res.userIni,
+    //     //   res.clauPublicaO,
+    //     //   res.clauPublicaD,
+    //     //   res.randA, res.randB
+    //     // ));
+    //   }
+    // });
   }
 
   private errorSub(): void {
@@ -110,14 +145,15 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.errorChat = false;
         if(this.msg !== undefined)
           this.sendCompleted(this.msg, this.chatSelectedUser())
-        window.location.reload();
+// Descomentar!!          
+        // window.location.reload();
       }
     });
   }
 
   ngOnDestroy(){
     this.chatService.errorSubject.unsubscribe();
-    this.chatService.keySubject.unsubscribe();
+    keySubject.unsubscribe();
   }
 
   private setChats(sel?: string){
