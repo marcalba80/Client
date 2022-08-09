@@ -69,9 +69,9 @@ export class ChatService {
           // key = res;
           console.log("KeyGenP: " + JSON.stringify(key.publicKey));
           console.log("KeyGenPr: " + JSON.stringify(key.privateKey));
-          let rnd = this.cryptService.randomValues();
+          // let rnd = this.cryptService.randomValues();
           db.xat.add(
-            new XatImpl(msg.getUserTo(), msg.getUserFrom(), false, key.publicKey, key.privateKey, undefined, this.cryptService.decodeUTF8(rnd), '', '')
+            new XatImpl(msg.getUserTo(), msg.getUserFrom(), false, key.publicKey, key.privateKey, undefined, '', '')
           );
           this.sendMessage(new ChatRequest(SEND_RSA, msg.getUserFrom(), msg.getUserTo(), JSON.stringify(key.publicKey)));
         });
@@ -101,25 +101,58 @@ export class ChatService {
     // }
     
     let missatge = new MissatgeImpl(msg, msg.getUserFrom(), msg.getUserTo());
-    db.xat.get({user1: msg.getUserFrom(), user2: msg.getUserTo()}).then(item => {
-      if(item == undefined){
-        db.xat.add(
-          new XatImpl(msg.getUserFrom(), msg.getUserTo(), false, undefined, undefined, undefined, missatge.text, missatge.data)
-        );
-      }
+
+    this.randomseedService.getRandString(msg.getUserFrom()).then(key => {
+      console.log("RKSeed: " + key);
+      console.log("RMCiph: " + this.cryptService.encryptAESHMAC(msg.getContent(), key));
+      missatge.text = this.cryptService.decryptAESHMAC(msg.getContent(), key);
+      db.xat.where({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).modify({
+        lastMsg: missatge.text,
+        lastDate: missatge.data
+      });
+      db.missatge.add(
+        missatge
+      );
+    },
+    err => {
+      db.xat.get({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).then(ret =>{
+        this.randomseedService.addRand(msg.getUserFrom(), this.cryptService.hashX(
+          ret?.userIni, 
+          ret?.clauPublicaO, 
+          ret?.clauPublicaD, 
+          ret?.randA, ret?.randB)).then(keyn => {
+            console.log("MCiph: " + this.cryptService.encryptAESHMAC(msg.getContent(), keyn));
+            missatge.text = this.cryptService.decryptAESHMAC(msg.getContent(), keyn);
+            db.xat.where({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).modify({
+              lastMsg: missatge.text,
+              lastDate: missatge.data
+            });
+            db.missatge.add(
+              missatge
+            );
+          });
+      });
     });
+
+    // db.xat.get({user1: msg.getUserFrom(), user2: msg.getUserTo()}).then(item => {
+    //   if(item == undefined){
+    //     db.xat.add(
+    //       new XatImpl(msg.getUserFrom(), msg.getUserTo(), false, undefined, undefined, undefined, missatge.text, missatge.data)
+    //     );
+    //   }
+    // });
     
     // db.xat.update({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}, {
     //   lastMsg: missatge.text,
     //   lastDate: missatge.data
     // });
-    db.xat.where({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).modify({
-      lastMsg: missatge.text,
-      lastDate: missatge.data
-    });
-    db.missatge.add(
-      missatge
-    );
+    // db.xat.where({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).modify({
+    //   lastMsg: missatge.text,
+    //   lastDate: missatge.data
+    // });
+    // db.missatge.add(
+    //   missatge
+    // );
 // Descomentar!!
     // window.location.reload();
   }
@@ -131,20 +164,40 @@ export class ChatService {
   sendText(text: string, userTo: string): void{
     console.log("sendMsg userTo: " + userTo);
 
-    if(this.randomseedService.getRand(userTo) == undefined){
+    this.randomseedService.getRandString(userTo).then(key => {
+      console.log("KSeed: " + key);
+      console.log("MCiph: " + this.cryptService.encryptAESHMAC(text, key));
+      this.sendMessage(new ChatRequest(MESSAGE, this.storageService.getUser().username, userTo, 
+        this.cryptService.encryptAESHMAC(text, key)));
+    },
+    err => {
       db.xat.get({'user1': userTo, 'user2': this.storageService.getUser().username}).then(ret =>{
         this.randomseedService.addRand(userTo, this.cryptService.hashX(
           ret?.userIni, 
           ret?.clauPublicaO, 
           ret?.clauPublicaD, 
-          ret?.randA, ret?.randB));
-      })
-    }
+          ret?.randA, ret?.randB)).then(keyn => {
+            console.log("KSeed: " + keyn);
+            console.log("MCiph: " + this.cryptService.encryptAESHMAC(text, keyn));
+            this.sendMessage(new ChatRequest(MESSAGE, this.storageService.getUser().username, userTo, 
+              this.cryptService.encryptAESHMAC(text, keyn)));
+          });
+      });
+    });
+    // if(prng == undefined){
+    //   db.xat.get({'user1': userTo, 'user2': this.storageService.getUser().username}).then(ret =>{
+    //     this.randomseedService.addRand(userTo, this.cryptService.hashX(
+    //       ret?.userIni, 
+    //       ret?.clauPublicaO, 
+    //       ret?.clauPublicaD, 
+    //       ret?.randA, ret?.randB));
+    //   })
+    // }
 
-    let missatge = new ChatRequest(MESSAGE, this.storageService.getUser().username, userTo, text);
+    // let missatge = new ChatRequest(MESSAGE, this.storageService.getUser().username, userTo, text);
     // let mf = new MissatgeImpl(missatge, missatge.getUserTo(), missatge.getUserFrom());
-    if(userTo != "")
-      this.sendMessage(missatge);
+    // if(userTo != "")
+    //   this.sendMessage(missatge);
       // db.missatge.add(
       //   mf
       // );

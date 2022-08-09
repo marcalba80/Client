@@ -4,6 +4,12 @@ import { JsonWebKeyPair } from 'js-crypto-rsa/dist/typedef';
 import * as crypt from 'crypto-js';
 import { pseudoRandomBytes, randomBytes } from 'crypto';
 
+export interface MCiph{
+  iv: string;
+  m: string;
+  c: string;
+  cW: string;
+}
 
 const charact = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890,./;'[]\=-)(*&^%$#@!~`";
 
@@ -74,33 +80,54 @@ export class CryptService {
 
   encryptAESHMAC(msg: string, key: string): string{
     // crypt.HmacSHA256
+    console.log("encrK: " + key);
     let keyarr: Uint8Array = this.encodeUTF8(key);
-    let keyarr1: Uint8Array = keyarr.subarray(0, 127);
-    let keyarr2: Uint8Array = keyarr.subarray(128, 255);
+    let keyarr1: Uint8Array = keyarr.subarray(0, 16);
+    let keyarr2: Uint8Array = keyarr.subarray(16, 32);
+
+    let iv8: Uint8Array = this.randomValues16();
+    // let iv: crypt.lib.WordArray = crypt.enc.Utf8.parse(this.decodeUTF8(iv8));
     let iv: crypt.lib.WordArray = crypt.lib.WordArray.random(16);
-    
+
     let c = crypt.AES.encrypt(msg, crypt.enc.Utf8.parse(this.decodeUTF8(keyarr1)), {mode: crypt.mode.CBC, 
       padding: crypt.pad.Pkcs7,
       iv: iv});
-    let m = crypt.HmacSHA256(iv.toString(crypt.enc.Utf8) + c.ciphertext.toString(crypt.enc.Utf8), crypt.enc.Utf8.parse(this.decodeUTF8(keyarr2)));
-    return iv.toString(crypt.enc.Utf8) + c.ciphertext.toString(crypt.enc.Utf8) + m.toString(crypt.enc.Utf8);
+      // crypt.enc.Utf8.stringify()
+    let ivc = iv; ivc.concat(c.ciphertext);
+    let m = crypt.HmacSHA256(ivc.toString(), crypt.enc.Utf8.parse(this.decodeUTF8(keyarr2)));
+    // let ct = iv.concat(m);
+    // return iv.toString(crypt.enc.Utf8) + c.ciphertext.toString(crypt.enc.Utf8) + m.toString(crypt.enc.Utf8);
+    let ct: MCiph = {
+      iv: iv.toString(),
+      m: m.toString(),
+      c: c.toString(),
+      cW: c.ciphertext.toString(crypt.enc.Utf8)
+    }
+    // return ct.toString(crypt.enc.Utf8) + JSON.stringify(c);
+    return JSON.stringify(ct);
   }
 
-  decryptAES(msg: string, key: string): string | undefined{
-    let data = this.encodeUTF8(msg);
-    let keyarr1: Uint8Array = this.encodeUTF8(key).subarray(0, 127);
-    let keyarr2: Uint8Array = this.encodeUTF8(key).subarray(128, 255);
-    let iv = data.subarray(0, 127);
-    let m = data.subarray(data.length-256, data.length);
-    let c = data.subarray(128, data.length-256);
-    let macV = crypt.HmacSHA256(this.decodeUTF8(iv) + this.decodeUTF8(c), crypt.enc.Utf8.parse(this.decodeUTF8(keyarr2)));
-    if(this.decodeUTF8(m) == macV.toString(crypt.enc.Utf8))
-      return crypt.AES.decrypt(this.decodeUTF8(c), crypt.enc.Utf8.parse(this.decodeUTF8(keyarr1)), {
+  decryptAESHMAC(msg: string, key: string): string{
+    console.log("decrK: " + key);
+    let data: MCiph = JSON.parse(msg);
+    let keyarr1: Uint8Array = this.encodeUTF8(key).subarray(0, 16);
+    let keyarr2: Uint8Array = this.encodeUTF8(key).subarray(16, 32);
+    console.log("IV: " + data.iv);
+    let iv = crypt.enc.Hex.parse(data.iv);
+    let m = crypt.enc.Hex.parse(data.m);
+    console.log("IV: " + data.cW);
+    let c = crypt.enc.Hex.parse(data.cW);
+    let ivc = iv; ivc.concat(c);
+    let macV = crypt.HmacSHA256(ivc, crypt.enc.Utf8.parse(this.decodeUTF8(keyarr2)));
+    console.log("m: " + m.toString());
+    console.log("mV: " + macV.toString());
+    if(m.toString() == macV.toString())
+      return crypt.AES.decrypt(data.c, crypt.enc.Utf8.parse(this.decodeUTF8(keyarr1)), {
         mode: crypt.mode.CBC, 
         padding: crypt.pad.Pkcs7,
-        iv: crypt.enc.Utf8.parse(this.decodeUTF8(iv))
+        iv: iv
       }).toString(crypt.enc.Utf8);
-    return undefined;
+    return "undefined";
   }
 
   encodeUTF8(msg: string): Uint8Array{
@@ -125,6 +152,12 @@ export class CryptService {
 
   randomValues(): Uint8Array{
     let arr: Uint8Array = new Uint8Array(32);
+    window.crypto.getRandomValues(arr);
+    return arr;
+  }
+
+  randomValues16(): Uint8Array{
+    let arr: Uint8Array = new Uint8Array(16);
     window.crypto.getRandomValues(arr);
     return arr;
   }

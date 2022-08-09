@@ -31,9 +31,9 @@ export class RSAService {
           console.log("xatUndefined");
           console.log("KeyGenP: " + JSON.stringify(key.publicKey));
           console.log("KeyGenPr: " + JSON.stringify(key.privateKey));
-          let rnd = this.cryptService.randomValues();
+          // let rnd = this.cryptService.randomValues();
           db.xat.add(
-            new XatImpl(msg.getUserFrom(), msg.getUserTo(), false, key.publicKey, key.privateKey, undefined, this.cryptService.decodeUTF8(rnd), '', '')
+            new XatImpl(msg.getUserFrom(), msg.getUserTo(), false, key.publicKey, key.privateKey, undefined, '', '')
           );          
           sendMsg(new ChatRequest(SEND_RSA, msg.getUserTo(), msg.getUserFrom(), JSON.stringify(key.publicKey)));
           // this.keySubject.next(new XatImpl(msg.getUserFrom(), msg.getUserTo(), key.publicKey, key.privateKey, pKey, '', ''));

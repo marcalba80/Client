@@ -48,11 +48,11 @@ export class RndService {
 
   sendRnd(userTo: string, key: JsonWebKey): void{
     // let rnd = this.cryptService.makeRandom(16);
-    // let rnd = this.cryptService.randomValues();
-    // console.log("RndGen: " + this.cryptService.decodeUTF8(rnd));
-    // db.xat.where({'user1': userTo, 'user2': this.storageService.getUser().username}).modify({
-    //   randA: this.cryptService.decodeUTF8(rnd),
-    // });
+    let rnd = this.cryptService.randomValues();
+    console.log("RndGen: " + this.cryptService.decodeUTF8(rnd));
+    db.xat.where({'user1': userTo, 'user2': this.storageService.getUser().username}).modify({
+      randA: this.cryptService.decodeUTF8(rnd),
+    });
     db.xat.get({'user1': userTo, 'user2': this.storageService.getUser().username}).then(val => {
       if(val?.randA !== undefined)
         this.cryptService.encryptRSA(this.cryptService.encodeUTF8(val?.randA), key).then(res => {

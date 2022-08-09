@@ -18,7 +18,7 @@ export class XatImpl implements Xat{
         clauPublicaO?: JsonWebKey,
         clauPrivadaO?: JsonWebKey,
         clauPublicaD?: JsonWebKey,
-        randA?: string,
+        // randA?: string,
         lastMsg?: string, lastDate?: string
         )
     {
@@ -28,7 +28,7 @@ export class XatImpl implements Xat{
         this.clauPublicaO = clauPublicaO;
         this.clauPrivadaO = clauPrivadaO;
         this.clauPublicaD = clauPublicaD;
-        this.randA = randA;
+        // this.randA = randA;
         this.lastMsg = lastMsg;
         this.lastDate = lastDate;
     }

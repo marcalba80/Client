@@ -56,7 +56,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.isLoggedIn = this.storageService.isLoggedIn();
-    db.resetDatabase();
+    // db.resetDatabase();
     // db.delete();
     
     let selected = localStorage.getItem('selected')?.toString();
@@ -65,7 +65,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.setChats(selected);
     }
     // localStorage.clear();
-    console.log("Init sel: " + selected);
+    // console.log("randomSeed: " + '');
     // if(selected != null)
     //   this.restoreSel(selected);
     this.errorSub();
@@ -102,7 +102,7 @@ export class ChatComponent implements OnInit, OnDestroy {
             //   res.clauPublicaD,
             //   res.randA, res.randB
             // ));
-            window.location.reload();
+            // window.location.reload();
           });
         });
         
