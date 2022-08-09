@@ -15,7 +15,8 @@ import { ChatRequest,
   ERROR, 
   COMPLETED, 
   SEND_RSA,
-  SEND_RND} from '../_payload/ChatRequest';
+  SEND_RND,
+  SEED_INI} from '../_payload/ChatRequest';
   
 
 @Injectable({
@@ -42,6 +43,9 @@ export class ChatService {
         break;
       case SEND_RND:
         this.rndService.rcvRnd(msg);
+        break;
+      case SEED_INI:
+        this.rcvSeedIni(msg);
         break;
       case MESSAGE:
         this.missatgeText(msg);
@@ -152,6 +156,15 @@ export class ChatService {
       //   lastMsg: mf.text,
       //   lastDate: mf.data
       // })
+  }
+
+  rcvSeedIni(msg: ChatRequest){
+    this.randomseedService.initRand(msg.userFrom);
+  }
+
+  iniSeed(user: string): void{
+    this.randomseedService.initRand(user);
+    sendMsg(new ChatRequest(SEED_INI, this.storageService.getUser().username, user, ""));
   }
 
   sendMessage(chatRequest: ChatRequest): void{

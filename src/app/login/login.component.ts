@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { db } from '../_domain/Data';
 import { AuthService } from '../_services/auth.service';
 import { ChatService } from '../_services/chat.service';
 import { StorageService } from '../_services/storage.service';
@@ -21,6 +22,7 @@ export class LoginComponent implements OnInit {
 
   constructor(private authService: AuthService, 
     private storageService: StorageService,
+    private chatService: ChatService,
     private router: Router){}
 
   ngOnInit(): void {
@@ -53,6 +55,11 @@ export class LoginComponent implements OnInit {
   reloadPage(): void {
     // window.location.reload();
     this.router.navigate(['/chat']).then(() => {
+      db.xat.toArray().then(list => {
+        list.forEach(item => {
+          this.chatService.iniSeed(item.user1);
+        })
+      });
       window.location.reload();
     });
   }
