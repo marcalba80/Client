@@ -65,7 +65,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.setChats(selected);
     }
 
-    // localStorage.clear();
+    localStorage.clear();
     let s = localStorage.getItem('seed');
     console.log("s: " + s);
     if (s)
@@ -101,14 +101,15 @@ export class ChatComponent implements OnInit, OnDestroy {
             db.xat.get({'user1': res.user1, 'user2': res.user2}).then(val => {
               if(val !== undefined && val.clauPublicaD !== undefined)
               this.rndService.sendRnd(val?.user1, val?.clauPublicaD);
+// Descomentar                 
+              window.location.reload();
             });
             // this.randomseedService.addRand(res.user1, this.cryptService.hashX(
             //   res.userIni,
             //   res.clauPublicaO,
             //   res.clauPublicaD,
             //   res.randA, res.randB
-            // ));
-            // window.location.reload();
+            // ));                     
           });
         });
         
@@ -152,7 +153,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         if(this.msg !== undefined)
           this.sendCompleted(this.msg, this.chatSelectedUser())
 // Descomentar!!          
-        // window.location.reload();
+        window.location.reload();
       }
     });
   }
@@ -187,7 +188,8 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   addUser(): void {
     console.log("AddUser " + this.addUsername)
-    if(this.addUsername !== undefined)
+    if(this.addUsername !== undefined &&
+      this.addUsername != this.storageService.getUser().username)
       this.chatService.addUser(this.addUsername);
     // window.location.reload();
   }

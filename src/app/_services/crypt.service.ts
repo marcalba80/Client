@@ -58,7 +58,7 @@ export class CryptService {
             resolved(crypt.SHA256(k2 + k1 + randB + randA).toString());
           }
       }
-    })
+    });
   }
   async encryptRSA(msg: Uint8Array, key: JsonWebKey): Promise<Uint8Array> {
     console.log("encode: " + JSON.stringify(msg))

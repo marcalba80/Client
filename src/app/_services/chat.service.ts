@@ -116,6 +116,7 @@ export class ChatService {
       db.missatge.add(
         missatge
       );
+      window.location.reload();
     },
     err => {
       console.log("GetString Error: " + err);
@@ -139,6 +140,7 @@ export class ChatService {
             db.missatge.add(
               missatge
             );
+            window.location.reload();
           });
       // });
     });

@@ -30,10 +30,10 @@ export class RandomSeedService {
 
   async addRand(user: string): Promise<string>{
     return await new Promise<string>((resolve, reject) => {
-      console.log("SeedRandomGen: " + this.getSeed(user));
+      console.log("addRand: " + user);
       // if(seed !== undefined){
-        this.getSeed(user).then(seed => {
-
+      this.getSeed(user).then(seed => {
+        
         
         let n = this.rands.push({
           user: user,
@@ -42,11 +42,14 @@ export class RandomSeedService {
         });
         
         // console.log("AddSeed: " + this.rands[n-1].rand.string(32));
-        console.log("RandFIni: " + this.rands[0].rand.toString());
+        // console.log("RandFIni: " + this.rands[0].rand.toString());
         resolve(this.rands[n-1].rand.string(32));
         this.rands[n-1].iter = this.rands[n-1].iter + 1;
         localStorage.setItem('seed', JSON.stringify(this.rands));
-        });
+      },
+      err => {
+        console.log(err);
+      });
       // }
       // reject();
     });
@@ -62,9 +65,11 @@ export class RandomSeedService {
   }
 
   async getRandString(user: string, seed?: string): Promise<string> {
+    let finded = false;
     return await new Promise<string>((resolve, reject) => {
-      this.rands.forEach(val => {
+      this.rands.forEach((val, index) => {
         if(val.user == user){
+          finded = true;
           console.log("R1 " + val.iter);
           if(val.rand == undefined){
             console.log("R12 " + val.rand);
@@ -87,7 +92,10 @@ export class RandomSeedService {
           }
           localStorage.setItem('seed', JSON.stringify(this.rands));
         }
+        
       });
+      if(!finded)
+          reject("No trobat");
       if(this.rands.length == 0)
         reject("Rands buit");
     });
@@ -109,6 +117,7 @@ export class RandomSeedService {
   }
 
   private getSeed(userTo: string): Promise<string>{
+    console.log("getSeed " + this.storageService.getUser().username);
     return new Promise<string>((resolved, rejected) => {
       db.xat.get({'user1': userTo, 'user2': this.storageService.getUser().username}).then(ret => {
         this.cryptService.hashX(
@@ -131,6 +140,7 @@ export class RandomSeedService {
       if (val.user == user)
         val.iter = 1;
         val.rand.initState();
+        localStorage.setItem('seed', JSON.stringify(this.rands));
     })
   }
 
