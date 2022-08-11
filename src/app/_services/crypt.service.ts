@@ -40,26 +40,26 @@ export class CryptService {
   }
 
   hashX(userR?: boolean, keyP1?: JsonWebKey, keyP2?: JsonWebKey, 
-    randA?: string, randB?: string): string | undefined{
-    if(keyP1 !== undefined && keyP2 !== undefined
-      && randA !== undefined && randB !== undefined){
-      const k1 = keyP1.n?.toString();
-      const k2 = keyP2.n?.toString();
-      console.log("K1: " + keyP1.n);
-      console.log("K2: " + keyP2.n);
-      if(k1 !== undefined && k2 !== undefined)
-        if(userR){
-          console.log("HashRand: " + crypt.SHA256(k1 + k2 + randA + randB).toString());
-          return crypt.SHA256(k1 + k2 + randA + randB).toString();
-        }  
-        else{
-          console.log("HashRand: " + crypt.SHA256(k2 + k1 + randB + randA).toString());
-          return crypt.SHA256(k2 + k1 + randB + randA).toString();
-        }
-    }
-    return undefined;
+    randA?: string, randB?: string): Promise<string>{
+    return new Promise<string>((resolved, rejected) => {
+      if(keyP1 !== undefined && keyP2 !== undefined
+        && randA !== undefined && randB !== undefined){
+        const k1 = keyP1.n?.toString();
+        const k2 = keyP2.n?.toString();
+        console.log("K1: " + keyP1.n);
+        console.log("K2: " + keyP2.n);
+        if(k1 !== undefined && k2 !== undefined)
+          if(userR){
+            console.log("HashRand: " + crypt.SHA256(k1 + k2 + randA + randB).toString());
+            resolved(crypt.SHA256(k1 + k2 + randA + randB).toString());
+          }  
+          else{
+            console.log("HashRand: " + crypt.SHA256(k2 + k1 + randB + randA).toString());
+            resolved(crypt.SHA256(k2 + k1 + randB + randA).toString());
+          }
+      }
+    })
   }
-
   async encryptRSA(msg: Uint8Array, key: JsonWebKey): Promise<Uint8Array> {
     console.log("encode: " + JSON.stringify(msg))
     return await rsa.encrypt(msg, key);
@@ -93,18 +93,23 @@ export class CryptService {
       padding: crypt.pad.Pkcs7,
       iv: iv});
       // crypt.enc.Utf8.stringify()
-    let ivc = iv; ivc.concat(c.ciphertext);
+    let ivc = crypt.enc.Hex.parse(iv.toString() + c.ciphertext.toString());
     let m = crypt.HmacSHA256(ivc.toString(), crypt.enc.Utf8.parse(this.decodeUTF8(keyarr2)));
+    console.log("iv: " + iv.toString());
+    console.log("m: " + m.toString());
+    console.log("cW: " + c.ciphertext.toString());
+    console.log("ivc: " + ivc.toString());
     // let ct = iv.concat(m);
     // return iv.toString(crypt.enc.Utf8) + c.ciphertext.toString(crypt.enc.Utf8) + m.toString(crypt.enc.Utf8);
     let ct: MCiph = {
       iv: iv.toString(),
       m: m.toString(),
       c: c.toString(),
-      cW: c.ciphertext.toString(crypt.enc.Utf8)
+      cW: c.ciphertext.toString()
     }
     // return ct.toString(crypt.enc.Utf8) + JSON.stringify(c);
     return JSON.stringify(ct);
+    // return c.toString();
   }
 
   decryptAESHMAC(msg: string, key: string): string{
@@ -115,11 +120,14 @@ export class CryptService {
     console.log("IV: " + data.iv);
     let iv = crypt.enc.Hex.parse(data.iv);
     let m = crypt.enc.Hex.parse(data.m);
-    console.log("IV: " + data.cW);
+    // console.log("IV: " + data.cW);
     let c = crypt.enc.Hex.parse(data.cW);
     let ivc = iv; ivc.concat(c);
-    let macV = crypt.HmacSHA256(ivc, crypt.enc.Utf8.parse(this.decodeUTF8(keyarr2)));
+    let macV = crypt.HmacSHA256(ivc.toString(), crypt.enc.Utf8.parse(this.decodeUTF8(keyarr2)));
+    console.log("iv: " + iv.toString());
     console.log("m: " + m.toString());
+    console.log("cW: " + c.toString());
+    console.log("ivc: " + ivc.toString());
     console.log("mV: " + macV.toString());
     if(m.toString() == macV.toString())
       return crypt.AES.decrypt(data.c, crypt.enc.Utf8.parse(this.decodeUTF8(keyarr1)), {

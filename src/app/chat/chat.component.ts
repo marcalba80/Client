@@ -64,8 +64,14 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.websocketService.connect();
       this.setChats(selected);
     }
+
     // localStorage.clear();
-    // console.log("randomSeed: " + '');
+    let s = localStorage.getItem('seed');
+    console.log("s: " + s);
+    if (s)
+      this.randomseedService.rands = JSON.parse(s);
+    
+    // console.log("randomSeed: " + this.randomseedService.rands[0].user);
     // if(selected != null)
     //   this.restoreSel(selected);
     this.errorSub();

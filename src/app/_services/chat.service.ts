@@ -104,7 +104,10 @@ export class ChatService {
 
     this.randomseedService.getRandString(msg.getUserFrom()).then(key => {
       console.log("RKSeed: " + key);
-      console.log("RMCiph: " + this.cryptService.encryptAESHMAC(msg.getContent(), key));
+      console.log("RKSeedG: " + key);
+      console.log("RJsonSeedG: " + JSON.stringify(this.randomseedService.rands));
+      // console.log("RMCiph: " + this.cryptService.encryptAESHMAC(msg.getContent(), key));
+      // localStorage.setItem('seed', JSON.stringify(this.randomseedService.rands));
       missatge.text = this.cryptService.decryptAESHMAC(msg.getContent(), key);
       db.xat.where({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).modify({
         lastMsg: missatge.text,
@@ -115,13 +118,19 @@ export class ChatService {
       );
     },
     err => {
-      db.xat.get({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).then(ret =>{
-        this.randomseedService.addRand(msg.getUserFrom(), this.cryptService.hashX(
-          ret?.userIni, 
-          ret?.clauPublicaO, 
-          ret?.clauPublicaD, 
-          ret?.randA, ret?.randB)).then(keyn => {
-            console.log("MCiph: " + this.cryptService.encryptAESHMAC(msg.getContent(), keyn));
+      console.log("GetString Error: " + err);
+      // db.xat.get({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).then(ret =>{
+        this.randomseedService.addRand(msg.getUserFrom() 
+        // ,this.cryptService.hashX(
+        //   ret?.userIni, 
+        //   ret?.clauPublicaO, 
+        //   ret?.clauPublicaD, 
+        //   ret?.randA, ret?.randB)
+          ).then(keyn => {
+            console.log("KSeed: " + keyn);            
+            console.log("JsonSeed: " + JSON.stringify(this.randomseedService.rands));
+            // console.log("MCiph: " + this.cryptService.encryptAESHMAC(msg.getContent(), keyn));
+            // localStorage.setItem('seed', JSON.stringify(this.randomseedService.rands));
             missatge.text = this.cryptService.decryptAESHMAC(msg.getContent(), keyn);
             db.xat.where({'user1': msg.getUserFrom(), 'user2': msg.getUserTo()}).modify({
               lastMsg: missatge.text,
@@ -131,7 +140,7 @@ export class ChatService {
               missatge
             );
           });
-      });
+      // });
     });
 
     // db.xat.get({user1: msg.getUserFrom(), user2: msg.getUserTo()}).then(item => {
@@ -163,27 +172,34 @@ export class ChatService {
 
   sendText(text: string, userTo: string): void{
     console.log("sendMsg userTo: " + userTo);
-
-    this.randomseedService.getRandString(userTo).then(key => {
-      console.log("KSeed: " + key);
-      console.log("MCiph: " + this.cryptService.encryptAESHMAC(text, key));
-      this.sendMessage(new ChatRequest(MESSAGE, this.storageService.getUser().username, userTo, 
-        this.cryptService.encryptAESHMAC(text, key)));
-    },
-    err => {
-      db.xat.get({'user1': userTo, 'user2': this.storageService.getUser().username}).then(ret =>{
-        this.randomseedService.addRand(userTo, this.cryptService.hashX(
-          ret?.userIni, 
-          ret?.clauPublicaO, 
-          ret?.clauPublicaD, 
-          ret?.randA, ret?.randB)).then(keyn => {
-            console.log("KSeed: " + keyn);
-            console.log("MCiph: " + this.cryptService.encryptAESHMAC(text, keyn));
-            this.sendMessage(new ChatRequest(MESSAGE, this.storageService.getUser().username, userTo, 
-              this.cryptService.encryptAESHMAC(text, keyn)));
-          });
+    // db.xat.get({'user1': userTo, 'user2': this.storageService.getUser().username}).then(ret => {
+    //   let seed = this.cryptService.hashX(
+    //     ret?.userIni, 
+    //     ret?.clauPublicaO, 
+    //     ret?.clauPublicaD, 
+    //     ret?.randA, ret?.randB);
+      this.randomseedService.getRandString(userTo).then(key => {
+        console.log("KSeedG: " + key);
+        console.log("JsonSeedG: " + JSON.stringify(this.randomseedService.rands));
+        // console.log("MCiphG: " + this.cryptService.encryptAESHMAC(text, key));
+        // localStorage.setItem('seed', JSON.stringify(this.randomseedService.rands));
+        this.sendMessage(new ChatRequest(MESSAGE, this.storageService.getUser().username, userTo, 
+          this.cryptService.encryptAESHMAC(text, key)));
+      },
+      err => {
+        console.log("GetString Error: " + err);
+        // db.xat.get({'user1': userTo, 'user2': this.storageService.getUser().username}).then(ret => {
+          this.randomseedService.addRand(userTo).then(keyn => {
+              console.log("KSeed: " + keyn);
+              console.log("JsonSeed: " + JSON.stringify(this.randomseedService.rands));
+              // console.log("MCiph: " + this.cryptService.encryptAESHMAC(text, keyn));
+              // localStorage.setItem('seed', JSON.stringify(this.randomseedService.rands));
+              this.sendMessage(new ChatRequest(MESSAGE, this.storageService.getUser().username, userTo, 
+                this.cryptService.encryptAESHMAC(text, keyn)));
+            });
+        // });
       });
-    });
+    // });
     // if(prng == undefined){
     //   db.xat.get({'user1': userTo, 'user2': this.storageService.getUser().username}).then(ret =>{
     //     this.randomseedService.addRand(userTo, this.cryptService.hashX(
