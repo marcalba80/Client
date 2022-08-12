@@ -18,7 +18,6 @@ export class LoginComponent implements OnInit {
   isLoggedIn = false;
   isLoginFailed = false;
   errorMessage = '';
-  // roles: string[] = [];
 
   constructor(private authService: AuthService, 
     private storageService: StorageService,
@@ -41,8 +40,6 @@ export class LoginComponent implements OnInit {
 
         this.isLoginFailed = false;
         this.isLoggedIn = true;
-        // this.chatService.connect();
-        // this.roles = this.storageService.getUser().roles;
         this.reloadPage();
       },
       error: err => {
@@ -53,7 +50,6 @@ export class LoginComponent implements OnInit {
   }
 
   reloadPage(): void {
-    // window.location.reload();
     this.router.navigate(['/chat']).then(() => {
       db.xat.toArray().then(list => {
         list.forEach(item => {

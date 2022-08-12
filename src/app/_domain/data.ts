@@ -36,27 +36,9 @@ export class AppDB extends Dexie{
             xat: '++id, user1, user2',
             missatge: '++id, [idXat1+idXat2], [data+hora]',
         });
-        // this.version(4).stores({
-        //     xat: 'username',
-        //     missatge: '++id, idXat, [data+hora]',
-        // });
-        // this.resetDatabase().then(db => {
-        //     this.version(1).stores({
-        //         xat: 'user1, user2',
-        //         missatge: '++id, idXat1, idXat2, [data+hora]',
-        //     });
-        // })
     }
 
-    // private recreate(){
-    //     return db.delete().then(() => db.open());
-    // }
-
     async resetDatabase() {
-        // await db.transaction('rw', 'Xat', 'Missatge', () => {
-        //     this.xat.clear();
-        //     this.missatge.clear();
-        // });
         this.xat.clear();
         this.missatge.clear();
     }

@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as seedrandom from 'random-seed';
-import { Subject } from 'rxjs';
 import { db } from '../_domain/Data';
-import { XatImpl } from '../_domain/XatImpl';
 import { CryptService } from './crypt.service';
 import { StorageService } from './storage.service';
 
@@ -12,8 +10,6 @@ export interface RSeed{
   rand: seedrandom.RandomSeed;
 }
 
-// export const randSubject: Subject<XatImpl> = new Subject();
-
 @Injectable({
   providedIn: 'root'
 })
@@ -22,19 +18,14 @@ export class RandomSeedService {
 
   constructor(private storageService: StorageService,
     private cryptService: CryptService) { 
-    // this.rands = [];
-    // let s = localStorage.getItem('seed');
-    // if (s)
-    //   this.rands = JSON.parse(s);
+    
   }
 
   async addRand(user: string): Promise<string>{
     return await new Promise<string>((resolve, reject) => {
       console.log("addRand: " + user);
-      // if(seed !== undefined){
-      this.getSeed(user).then(seed => {
-        
-        
+      
+      this.getSeed(user).then(seed => {                
         let n = this.rands.push({
           user: user,
           rand: seedrandom.create(seed),
@@ -50,18 +41,8 @@ export class RandomSeedService {
       err => {
         console.log(err);
       });
-      // }
       // reject();
-    });
-    // if(seed !== undefined){
-    //   let n = this.rands.push({
-    //     user: user,
-    //     rand: seedrandom.create(seed)
-    //   });
-    //   localStorage.setItem('seed', JSON.stringify(this.rands));
-    //   console.log("AddSeed: " + this.rands[this.rands.length-1].rand.string(32));
-    //   return this.rands[n].rand;
-    // }
+    });    
   }
 
   async getRandString(user: string, seed?: string): Promise<string> {
@@ -72,12 +53,10 @@ export class RandomSeedService {
           finded = true;
           console.log("R1 " + val.iter);
           if(val.rand == undefined){
-            console.log("R12 " + val.rand);
-            // this.delElem(user, seed);
+            console.log("R12 " + val.rand);            
             this.getSeed(user).then(seed => {
               console.log("SeedRandomGen: " + seed);
               val.rand = seedrandom.create(seed);
-              // val.iter = 4;
               console.log("R13 " + val.rand);
               
               resolve(this.recString(val.rand, val.iter));
@@ -98,22 +77,7 @@ export class RandomSeedService {
           reject("No trobat");
       if(this.rands.length == 0)
         reject("Rands buit");
-    });
-    // this.rands.forEach(val => {
-    //   if(val.user == user)
-    //     return val.rand;
-    //   else
-    //     return undefined;
-    // });
-    // return undefined;
-  }
-
-  private delElem(user: string){
-    let aux: RSeed[] = [];
-    this.rands.forEach(val =>{
-      if(val.user != user) aux.push(val);
-    });
-    this.rands = aux;
+    });    
   }
 
   private getSeed(userTo: string): Promise<string>{
@@ -132,7 +96,6 @@ export class RandomSeedService {
         rejected();
       });
     });
-    // return undefined;
   }
 
   initRand(user: string): void {

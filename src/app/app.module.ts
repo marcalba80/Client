@@ -35,9 +35,6 @@ registerLocaleData(es);
     ProfileComponent,
     DialogComponent
   ],
-  // entryComponents: [
-  //   DialogComponent
-  // ],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,

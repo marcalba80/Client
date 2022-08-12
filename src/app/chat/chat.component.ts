@@ -31,8 +31,6 @@ export class ChatComponent implements OnInit, OnDestroy {
   isLoggedIn = false;
   addUsername?: string;
   msg?: string;
-  // chats: {c: Xat, selected: boolean}[];
-  // msgs: {m: Missatge, isIncoming: boolean}[];
   chats: Chats[];
   msgs: Msgs[];
   errorChat: boolean = false;
@@ -51,7 +49,6 @@ export class ChatComponent implements OnInit, OnDestroy {
     
     this.chats = [];
     this.msgs = [];
-    // this.errorChat = false;
   }
 
   ngOnInit(): void {
@@ -65,25 +62,20 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.setChats(selected);
     }
 
-    localStorage.clear();
+    // localStorage.clear();
     let s = localStorage.getItem('seed');
     console.log("s: " + s);
     if (s)
       this.randomseedService.rands = JSON.parse(s);
     
-    // console.log("randomSeed: " + this.randomseedService.rands[0].user);
-    // if(selected != null)
-    //   this.restoreSel(selected);
+    // console.log("randomSeed: " + this.randomseedService.rands[0].user);   
     this.errorSub();
     this.keySub();
-    this.randSub();
   }
 
-  private keySub(): void {
-    // let auth: AuthRSA;
+  private keySub(): void {    
     keySubject.subscribe({
-      next: res => {
-        // auth = res;
+      next: res => {        
         let key = this.cryptService.hashM(res.userIni, res.clauPublicaO, res.clauPublicaD);
         console.log("KeyH: " + key);
         this.zone.run(() => {
@@ -95,21 +87,13 @@ export class ChatComponent implements OnInit, OnDestroy {
               key: key
             }
           });
-          dialogRef.afterClosed().subscribe(ret => {
-            // if (auth.xat.clauPublicaD !== undefined)
-            //   this.chatService.sendRnd(auth.xat.user1, auth.xat.clauPublicaD);
+          dialogRef.afterClosed().subscribe(ret => {            
             db.xat.get({'user1': res.user1, 'user2': res.user2}).then(val => {
               if(val !== undefined && val.clauPublicaD !== undefined)
               this.rndService.sendRnd(val?.user1, val?.clauPublicaD);
 // Descomentar                 
               window.location.reload();
-            });
-            // this.randomseedService.addRand(res.user1, this.cryptService.hashX(
-            //   res.userIni,
-            //   res.clauPublicaO,
-            //   res.clauPublicaD,
-            //   res.randA, res.randB
-            // ));                     
+            });                                 
           });
         });
         
@@ -121,19 +105,6 @@ export class ChatComponent implements OnInit, OnDestroy {
         
       }
     });
-  }
-
-  private randSub(): void {
-    // randSubject.subscribe({
-    //   next: res => {
-    //     // this.randomseedService.addRand(res.user1, this.cryptService.hashX(
-    //     //   res.userIni,
-    //     //   res.clauPublicaO,
-    //     //   res.clauPublicaD,
-    //     //   res.randA, res.randB
-    //     // ));
-    //   }
-    // });
   }
 
   private errorSub(): void {
@@ -164,7 +135,6 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   private setChats(sel?: string){
-      // db.xat.toArray().then(list => {
       console.log("setChat " + sel);
       db.xat.where({user2: this.storageService.getUser().username}).toArray(list => {
       list.forEach(chat => {        
@@ -176,7 +146,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   private setMsgs(chat: Xat){
-    db.missatge.where({idXat1: chat.user1, idXat2: chat.user2})/*.equals({idXat1: chat.user1, idXat2: chat.user2})*/.sortBy('[data+hora]').then(list => {
+    db.missatge.where({idXat1: chat.user1, idXat2: chat.user2}).sortBy('[data+hora]').then(list => {
       list.forEach(msg => {
         this.msgs.push({
           m: msg,
@@ -191,15 +161,12 @@ export class ChatComponent implements OnInit, OnDestroy {
     if(this.addUsername !== undefined &&
       this.addUsername != this.storageService.getUser().username)
       this.chatService.addUser(this.addUsername);
-    // window.location.reload();
   }
 
   sendMsg(): void {
     console.log("sendMsg: "+ this.msg)
     if(this.msg !== undefined){
-      this.chatService.sendText(this.msg, this.chatSelectedUser());
-      // window.location.reload();
-      
+      this.chatService.sendText(this.msg, this.chatSelectedUser());      
     }
   }
 
@@ -220,25 +187,12 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.chats.forEach(chat => {
       if(chat.c.user1 == xat.c.user1) chat.selected = true;
       else chat.selected = false;
-    });
-    // this.chats.forEach(chat => {
-    //   console.log("selected: " + chat.selected);
-    // });
-    // chat.selected = true;
+    });    
     this.errorChat = false;
     this.msgs = [];
-    // if(!xat.selected)
       this.setMsgs(xat.c);
     localStorage.setItem('selected', xat.c.user1);
   }
-
-  // private restoreSel(userSel: string): void{
-    
-  //   this.chats.forEach(chat => {
-  //     console.log("restUser " + chat.c.username);
-  //     // if(chat.c.username == userSel) ;
-  //   });
-  // }
 
   chatSelectedUser(): string{
     let ret = "";

@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import rsa from 'js-crypto-rsa';
 import { JsonWebKeyPair } from 'js-crypto-rsa/dist/typedef';
 import * as crypt from 'crypto-js';
-import { pseudoRandomBytes, randomBytes } from 'crypto';
 
 export interface MCiph{
   iv: string;
@@ -62,54 +61,42 @@ export class CryptService {
   }
   async encryptRSA(msg: Uint8Array, key: JsonWebKey): Promise<Uint8Array> {
     console.log("encode: " + JSON.stringify(msg))
-    return await rsa.encrypt(msg, key);
-    // .then(res =>{
-    //   console.log("Crypt: " + res);
-    //   return res
-    // })
-    // return undefined;
+    return await rsa.encrypt(msg, key);    
   }
 
   async decryptRSA(msg: Uint8Array, key: JsonWebKey): Promise<Uint8Array> {
     return await rsa.decrypt(msg, key);
-    // .then(res =>{
-    //   return res;
-    // })
-    // return undefined;
   }
 
   encryptAESHMAC(msg: string, key: string): string{
-    // crypt.HmacSHA256
     console.log("encrK: " + key);
     let keyarr: Uint8Array = this.encodeUTF8(key);
     let keyarr1: Uint8Array = keyarr.subarray(0, 16);
     let keyarr2: Uint8Array = keyarr.subarray(16, 32);
 
     let iv8: Uint8Array = this.randomValues16();
-    // let iv: crypt.lib.WordArray = crypt.enc.Utf8.parse(this.decodeUTF8(iv8));
+    
     let iv: crypt.lib.WordArray = crypt.lib.WordArray.random(16);
 
     let c = crypt.AES.encrypt(msg, crypt.enc.Utf8.parse(this.decodeUTF8(keyarr1)), {mode: crypt.mode.CBC, 
       padding: crypt.pad.Pkcs7,
       iv: iv});
-      // crypt.enc.Utf8.stringify()
+      
     let ivc = crypt.enc.Hex.parse(iv.toString() + c.ciphertext.toString());
     let m = crypt.HmacSHA256(ivc.toString(), crypt.enc.Utf8.parse(this.decodeUTF8(keyarr2)));
     console.log("iv: " + iv.toString());
     console.log("m: " + m.toString());
     console.log("cW: " + c.ciphertext.toString());
     console.log("ivc: " + ivc.toString());
-    // let ct = iv.concat(m);
-    // return iv.toString(crypt.enc.Utf8) + c.ciphertext.toString(crypt.enc.Utf8) + m.toString(crypt.enc.Utf8);
+    
     let ct: MCiph = {
       iv: iv.toString(),
       m: m.toString(),
       c: c.toString(),
       cW: c.ciphertext.toString()
     }
-    // return ct.toString(crypt.enc.Utf8) + JSON.stringify(c);
+    
     return JSON.stringify(ct);
-    // return c.toString();
   }
 
   decryptAESHMAC(msg: string, key: string): string{
@@ -200,7 +187,4 @@ export class CryptService {
     return JSON.parse(str);
   }
 
-  // StringToItnum(str: string): []{
-
-  // }
 }

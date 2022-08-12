@@ -6,7 +6,6 @@ import { ChatRequest } from '../_payload/ChatRequest';
 import { ChatService } from './chat.service';
 
 const CHAT_ENDP = 'http://localhost:8080/api/ws';
-// const CHAT_URL = 'http://localhost:8080/api/chat';
 
 export const stompClient = Stomp.over(new SockJS(CHAT_ENDP));
 
@@ -18,16 +17,10 @@ export const sendMsg = (chatRequest: ChatRequest) => {
   providedIn: 'root'
 })
 export class WebSocketService {
-  // stompClient = Stomp.over(new SockJS(CHAT_ENDP));
-  // stompClient = Stomp.over(new WebSocket(CHAT_ENDP))
-  // errorSubject: Subject<ChatRequest> = new Subject(); 
-  // keySubject: Subject<AuthRSA> = new Subject();
-  
-  // obser: Observable<any> = new Observable.;
 
   constructor(private storageService: StorageService, 
     private chatService: ChatService) { 
-    // this.errorSubject.complete();
+
   }
 
   connect() {
@@ -44,12 +37,8 @@ export class WebSocketService {
   }
 
   private onMessage = (msg: any) => {
-    // publicDecrypt(msg);
-    // console.log("Missatge: " + JSON.parse(msg.body));
     let aux: ChatRequest = JSON.parse(msg.body);
     let missatge: ChatRequest = new ChatRequest(aux.type, aux.userFrom, aux.userTo, aux.content);
-    // console.log("Object: "+ missatge.type)
-    // const missatge: ChatRequest = msg.body;
     this.chatService.processMessage(missatge);
   }
 

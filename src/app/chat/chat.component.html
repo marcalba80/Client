@@ -1,7 +1,4 @@
 <div class="container">
-  <!-- <header class="jumbotron">
-    <p>{{ content }}</p>
-  </header> -->
   <h3 class=" text-center"></h3>
   <div class="alert alert-warning" *ngIf="!isLoggedIn">
     S'ha d'iniciar sessió
@@ -21,12 +18,8 @@
               </span> </div>
           </div>
         </div>
-        <div class="inbox_chat">
-          <!-- <table name="chatSel" [(ngModel)]="selected" (ngModelChange)="onChange($event)"> -->
-          <!-- <table name="chatSel"> -->
-          <!-- <table mat-table [dataSource]="chats"> -->
+        <div class="inbox_chat">          
             <div class="chat_list" *ngFor="let chat of chats" (click)="selMsg(chat)" [ngClass]="{ 'active_chat': chat.selected}">
-            <!-- <tr mat-row class="chat_list"> -->
               <div class="chat_people" >
                 <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png"> </div>
                 <div class="chat_ib">
@@ -34,34 +27,12 @@
                   <p>{{ chat.c.lastMsg }}</p>
                 </div>
               </div>
-            </div>
-            <!-- <div class="chat_list">
-              <div class="chat_people">
-                <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
-                <div class="chat_ib">
-                  <h5>Sunil Rajput <span class="chat_date">Dec 25</span></h5>
-                  <p>Test, which is a new approach to have all solutions 
-                    astrology under one roof.</p>
-                </div>
-              </div>
-            </div> -->
-            <!-- <div class="chat_list">
-              <div class="chat_people">
-                <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
-                <div class="chat_ib">
-                  <h5>Sunil Rajput <span class="chat_date">Dec 25</span></h5>
-                  <p>Test, which is a new approach to have all solutions 
-                    astrology under one roof.</p>
-                </div>
-              </div>
-            </div> -->
-          <!-- </table> -->
+            </div>            
         </div>
       </div>
       <div class="mesgs">
         <div class="msg_history">
-          <div *ngFor="let msg of msgs">
-            <!-- <div class="incoming_msg"> -->
+          <div *ngFor="let msg of msgs">            
             <div class="incoming_msg" *ngIf="msg.isIncoming">
               <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png"> </div>
               <div class="received_msg">
@@ -69,8 +40,7 @@
                   <p>{{ msg.m.text }}</p>
                   <span class="time_date"> {{ msg.m.data }} | {{ msg.m.hora }}</span></div>
               </div>
-            </div>
-            <!-- <div class="outgoing_msg"> -->
+            </div>            
             <div class="outgoing_msg" *ngIf="!msg.isIncoming">
               <div class="sent_msg">
                 <p>{{ msg.m.text }}</p>

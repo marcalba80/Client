@@ -17,7 +17,7 @@ export class DialogComponent {
 
   constructor(public dialogRef: MatDialogRef<DialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData) {
-      // console.log("Dialog");
+      
      }
 
   onNoClick(): void{
@@ -27,26 +27,10 @@ export class DialogComponent {
   }
 
   iguals(){
-    // db.xat.get({'user1': this.data.xat.user1, 'user2': this.data.xat.user2}).then(val => {
-    //   if(val == undefined){
-    //     console.log("xatUndefined");
-    //     db.xat.add(
-    //       this.data.xat
-    //     );
-    //   }else{
-    //     console.log("xatDefined");
-    //     db.xat.where({'user1': this.data.xat.user1, 'user2': this.data.xat.user2}).modify({
-    //       clauPublicaD: this.data.xat.clauPublicaD,
-    //     });
-    //   }  
-    // });
-    console.log("KIguals");
+    // console.log("KIguals");
     db.xat.where({'user1': this.data.xat.user1, 'user2': this.data.xat.user2}).modify({
       clauPublicaD: this.data.xat.clauPublicaD,
       userIni: this.data.xat.userIni
     });
-    // console.log("clauPD: " + this.data.xat.clauPublicaD?.n);
-    // if (this.data.xat.clauPublicaD !== undefined)
-    //   this.chatService.sendRnd(this.data.xat.user1, this.data.xat.clauPublicaD)
   }
 }
