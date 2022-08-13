@@ -95,6 +95,7 @@ export class ChatService {
       db.missatge.add(
         missatge
       );
+// Descomentar      
       window.location.reload();
     },
     err => {
@@ -112,6 +113,7 @@ export class ChatService {
             db.missatge.add(
               missatge
             );
+// Descomentar            
             window.location.reload();
           });
     });    
